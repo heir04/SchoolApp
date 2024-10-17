@@ -1,0 +1,7 @@
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.csproj.AssemblyReference.cache
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.AssemblyInfoInputs.cache
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.AssemblyInfo.cs
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.csproj.CoreCompileInputs.cache
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Ismail\desktop\schoolapp\obj\Debug\net8.0\schoolapp.MvcApplicationPartsAssemblyInfo.cache
