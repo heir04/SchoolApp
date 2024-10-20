@@ -1,9 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolApp.Core.Domain.IRepositories;
-using SchoolApp.Core.IServices;
-using SchoolApp.Core.Services;
-using SchoolApp.Infrastructure.Persistence.Context;
-using SchoolApp.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
