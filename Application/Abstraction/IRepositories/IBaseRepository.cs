@@ -6,7 +6,6 @@ namespace SchoolApp.Application.Abstraction.IRepositories
     public interface IBaseRepository<T> where T : BaseEntity, new()
     {
         Task<T> Register(T entity);
-
         Task<T> Update(T entity);
         Task<T> GetAsync(Guid id);
         // T Get(Guid id);
@@ -14,7 +13,6 @@ namespace SchoolApp.Application.Abstraction.IRepositories
         Task<IList<T>> GetAll();
         Task<List<T>> GetAllByIdsAsync(List<Guid> ids);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> expression);
-
         Task<IList<T>> GetByExpression(Expression<Func<T, bool>> expression);
     }
 }

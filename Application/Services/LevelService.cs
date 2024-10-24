@@ -36,7 +36,7 @@ namespace SchoolApp.Application.Services
 
             return new BaseResponse<LevelDto>
             {
-                Message = "crested succesfully",
+                Message = "created succesfully",
                 Status = true,
                 Data = levelDTO
             };
@@ -105,14 +105,5 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        Task<BaseResponse<LevelDto>> ILevelService.Delete(Guid levelId)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<BaseResponse<IEnumerable<LevelDto>>> ILevelService.GetAll()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

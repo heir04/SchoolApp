@@ -49,7 +49,7 @@ namespace SchoolApp.Application.Services
                 Level = Level,
                 ContinuousAssessment = resultDto.ContinuousAssessment,
                 ExamScore = resultDto.ExamScore,
-                TotalScore = resultDto.TotalScore,
+                TotalScore = resultDto.ContinuousAssessment + resultDto.ExamScore,
                 Remark = resultDto.Remark
             };
 

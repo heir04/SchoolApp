@@ -114,7 +114,8 @@ namespace SchoolApp.Application.Services
                 Id = s.Id,
                 FirstName = s.FirstName,
                 LastName = s.LastName,
-                LevelName = s.LastName,
+                LevelId = s.LevelId,
+                LevelName = s.Level?.LevelName,
                 Email = s.Email,
             }).ToList();
             return new BaseResponse<IEnumerable<StudentDto>>
@@ -143,6 +144,8 @@ namespace SchoolApp.Application.Services
                 FirstName = s.FirstName,
                 LastName = s.LastName,
                 Email = s.Email,
+                LevelId = s.LevelId,
+                LevelName = s.Level?.LevelName
             }).ToList();
             return new BaseResponse<IEnumerable<StudentDto>>
             {
@@ -168,7 +171,8 @@ namespace SchoolApp.Application.Services
                 Id = student.Id,
                 FirstName = student.FirstName,
                 LastName = student.LastName,
-                Email = student.Email,  
+                Email = student.Email,
+                LevelName = student.LastName  
             };
             return new BaseResponse<StudentDto>
             {
@@ -220,7 +224,7 @@ namespace SchoolApp.Application.Services
                     Status = false
                 };
             }
-            studentDto.StudentId =$"Stu{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 5).ToUpper()}";
+            studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
             var student = new Student
             {
                 StudentId = studentDto.StudentId,
@@ -228,6 +232,7 @@ namespace SchoolApp.Application.Services
                 LastName = studentDto.LastName,
                 Email = studentDto.Email,
                 LevelId = getlevel.Id,
+                Level = getlevel,
                 UserId = user.Id
             };
             var addStudent = await _studentRepository.Register(student);
@@ -236,22 +241,22 @@ namespace SchoolApp.Application.Services
             student.IsDeleted = false;
             await _studentRepository.Update(student);
 
-            var studentDTo = new StudentDto
-            {
-                Id = addStudent.Id,
-                StudentId = addStudent.StudentId,
-                FirstName = addStudent.FirstName,
-                LastName = addStudent.LastName,
-                Email = addStudent.Email,
-                LevelName = addStudent.Level.LevelName
-                //LevelId = addStudent.LevelId
-            };
+            // var studentDTo = new StudentDto
+            // {
+            //     Id = addStudent.Id,
+            //     StudentId = addStudent.StudentId,
+            //     FirstName = addStudent.FirstName,
+            //     LastName = addStudent.LastName,
+            //     Email = addStudent.Email,
+            //     LevelName = addStudent.Level.LevelName
+            //     //LevelId = addStudent.LevelId
+            // };
 
             return new BaseResponse<StudentDto>
             {
                 Message = "Studennt registered succesfully",
                 Status = true,
-                Data = studentDTo
+                // Data = studentDTo
             };
         }
 
