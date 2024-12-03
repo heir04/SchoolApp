@@ -12,6 +12,6 @@ namespace SchoolApp.Application.Models.Dto
         public string? StudentId { get; set; }
         public Guid? LevelId { get; set; }
         public string? LevelName { get; set; }
-        public IList<StudentSubject>? StudentSubjects { get; set; }
+        // public IList<StudentSubject>? StudentSubjects { get; set; }
     }
 }

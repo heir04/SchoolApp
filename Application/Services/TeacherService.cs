@@ -21,29 +21,21 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Register(TeacherDto teacherDto)
         {
             var response = new BaseResponse<TeacherDto>();
-            var isTeacherExist = await _unitOfWork.Teacher.Get(t => t.Email == teacherDto.Email);
-            if (isTeacherExist is not null)
+            var emailExist = await _unitOfWork.Teacher.Get(t => t.Email == teacherDto.Email);
+            if (emailExist is not null)
             {
-                response.Message = "Teacher already exist";
+                response.Message = "Email already in use";
                 return response;
             }
 
-            var teacher = new Teacher
-            { 
-                FirstName = teacherDto.FirstName,
-                LastName = teacherDto.LastName,
-                Email = teacherDto.Email,  
-            };
-
             var user = new User
             {
-                UserName = $"{teacherDto.FirstName} {teacherDto.LastName}",
+                UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(teacherDto.Password),
                 Email = teacherDto.Email
             };
-            
             await _unitOfWork.User.Register(user);
-            
+
             var role = await _unitOfWork.Role.Get(r => r.Name == "Teacher");
             if (role == null)
             {
@@ -58,7 +50,17 @@ namespace SchoolApp.Application.Services
                 RoleId = role.Id
             };
            _context.UserRoles.Add(userRole);
-
+            
+            var teacher = new Teacher
+            { 
+                FirstName = teacherDto.FirstName,
+                LastName = teacherDto.LastName,
+                Email = teacherDto.Email,
+                UserId = user.Id,
+                User = user
+            
+            };
+            
            var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
 
            var teacherSubjects = new HashSet<TeacherSubject>();
@@ -75,7 +77,6 @@ namespace SchoolApp.Application.Services
            }
 
            teacher.TeacherSubjects = teacherSubjects;
-           teacher.User = user;
             
             await _unitOfWork.Teacher.Register(teacher);
             response.Message = "Created successfully";
@@ -149,7 +150,7 @@ namespace SchoolApp.Application.Services
                 Email = t.Email,
             }).ToList();
             
-            response.Message = "list of students";
+            response.Message = "Success";
             response.Status = true;
             response.Data = teacherDto;
             return response;

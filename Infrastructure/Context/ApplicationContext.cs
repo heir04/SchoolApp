@@ -15,7 +15,7 @@ namespace SchoolApp.Infrastructure.Context
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Admin> Admins{get; set;}
-        //public DbSet<Grade> Grades{get; set;}
+        public DbSet<SubjectScore> SubjectScores{get; set;}
         public DbSet<Level> Levels { get; set; }
         public DbSet<Result> Results{get; set;}
         public DbSet<Student> Students{get; set;}

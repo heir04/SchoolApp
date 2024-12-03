@@ -193,6 +193,7 @@ namespace SchoolApp.Application.Services
                     Status = false
                 };
             }
+
             var user = new User
             {
                 UserName = $"{studentDto.FirstName} {studentDto.LastName}",
@@ -200,6 +201,7 @@ namespace SchoolApp.Application.Services
                 Email = studentDto.Email
             };
             await _userRepository.Register(user);
+
             var role = await _roleRepository.Get(r => r.Name == "Student");
             if (role == null)
             {
@@ -209,12 +211,14 @@ namespace SchoolApp.Application.Services
                     Status = false
                 };
             }
+
             var userRole = new UserRole
             {
                 UserId = user.Id,
                 RoleId = role.Id
             };
             _context.UserRoles.Add(userRole);
+
             var getlevel = await _levelRepository.Get(l => l.LevelName == studentDto.LevelName);
             if (getlevel == null)
             {
@@ -224,6 +228,7 @@ namespace SchoolApp.Application.Services
                     Status = false
                 };
             }
+            
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
             var student = new Student
             {

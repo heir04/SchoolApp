@@ -23,9 +23,12 @@ namespace SchoolApp.Application.Services
                     Status = false
                 };
             }
+
             var level = new Level
             {
-                LevelName = levelDto.LevelName
+                LevelName = levelDto.LevelName,
+                //TeacherId = levelDto.LevelTeacherId,
+                //Teacher = levelDto.LevelTeacher
             };
             await _levelRepository.Register(level);
 

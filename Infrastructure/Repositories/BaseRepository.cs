@@ -46,7 +46,7 @@ namespace SchoolApp.Infrastructure.Repositories
 
         public async Task<List<T>> GetAllByIdsAsync(List<Guid> ids)
         {
-            return await _context.Set<T>()
+            return await _context!.Set<T>()
                 .Where(t => ids.Contains(t.Id))
                 .ToListAsync();
         }

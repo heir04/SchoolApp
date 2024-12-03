@@ -118,7 +118,7 @@ namespace SchoolApp.Application.Services
                 Id = a.Id,
                 FirstName = a.FirstName,
                 LastName = a.LastName,
-                Email = a.User.Email
+                Email = a.Email
             }).ToList();
             return new BaseResponse<IEnumerable<AdminDto>>
             {

@@ -14,5 +14,6 @@ namespace SchoolApp.Application.Models.Dto
         public double TotalScore { get; set; }
         public string? Grade { get; set; }
         public string? Remark { get; set; }
+        public ICollection<SubjectScoreDto> SubjectScores { get; set; } = new HashSet<SubjectScoreDto>();
     }
 }
