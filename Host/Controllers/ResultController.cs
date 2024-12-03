@@ -17,7 +17,7 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] ResultDto resultDto, Guid studentId, Guid subjectId, Guid levelId)
         {
-            var result = await _resultService.Create(resultDto, studentId, subjectId, levelId);
+            var result = await _resultService.Create(resultDto, studentId, subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
@@ -25,6 +25,13 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
         public async Task<IActionResult> Get([FromRoute]Guid id)
         {
             var result = await _resultService.Get(id);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("Get")] 
+        public async Task<IActionResult> CheckResult([FromRoute]Guid id)
+        {
+            var result = await _resultService.CheckResult(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
@@ -36,9 +43,9 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
         }
         
         [HttpPut("Update/{id}")]
-        public async Task<IActionResult> Update([FromRoute]Guid id, ResultDto resultDto)
+        public async Task<IActionResult> Update([FromRoute]Guid id, Guid subjectId, ResultDto resultDto)
         {
-            var result = await _resultService.Update(resultDto, id);
+            var result = await _resultService.Update(resultDto, id, subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 

@@ -19,10 +19,23 @@ namespace SchoolApp.Infrastructure.Repositories
                 .Where(expression)
                 .Include(r => r.Student)
                 .Include(r => r.Session)
-                .Include(r => r.Subject)
+                .Include(r => r.SubjectScores)
                 .ToListAsync();
 
             return await result;
+        }
+
+        public async Task<Result> GetResult(Expression<Func<Result, bool>> expression)
+        {
+            var result = _context.Results
+                .Where(expression)
+                .Include(r => r.Student)
+                .Include(r => r.Level)
+                .Include(r => r.Session)
+                .Include(r => r.SubjectScores)
+                .FirstOrDefaultAsync(expression);
+
+                return await result;
         }
     }
 }

@@ -13,17 +13,16 @@ namespace SchoolApp.Application.Services
             _unitOfWork = unitOfWork;
         }
         public async Task<BaseResponse<ResultDto>> Create(
-            ResultDto resultDto, Guid studentId, Guid subjectId, Guid levelId)
+            ResultDto resultDto, Guid studentId, Guid subjectId)
         {
             var response = new BaseResponse<ResultDto>();
 
             var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
             var Subject = await _unitOfWork.Subject.GetAsync(subjectId);
-            var Level = await _unitOfWork.Level.GetAsync(levelId);
             var student = await _unitOfWork.Student.GetAsync(studentId);
             var checkResult =  await _unitOfWork.Result
                 .ExistsAsync(r => r.SessionId == selectSession.Id && r.StudentId == studentId && 
-                             r.SubjectId == Subject.Id && r.LevelId == Level.Id);
+                              r.LevelId == student.LevelId);
             
             if (selectSession == null)
             {
@@ -43,15 +42,23 @@ namespace SchoolApp.Application.Services
                 Student = student,
                 SessionId = selectSession.Id, 
                 Session = selectSession,
+                LevelId = student.LevelId,
+                Level = student.Level,
+                Terms = resultDto.Terms,
+                Remark = resultDto.Remark
+            };
+
+            var subjectScore = new SubjectScore
+            {
                 SubjectId = Subject.Id,
                 Subject = Subject,
-                LevelId = Level.Id,
-                Level = Level,
                 ContinuousAssessment = resultDto.ContinuousAssessment,
                 ExamScore = resultDto.ExamScore,
                 TotalScore = resultDto.ContinuousAssessment + resultDto.ExamScore,
-                Remark = resultDto.Remark
             };
+            result.SubjectScores.Add(subjectScore);
+            
+           student.Results.Add(result);
 
            await _unitOfWork.Result.Register(result);
            response.Message = "Success";
@@ -86,7 +93,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<ResultDto>> Get(Guid id)
         {
             var response = new BaseResponse<ResultDto>();
-            var result = await _unitOfWork.Result.Get(t => t.Id == id);
+            var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
+            var result = await _unitOfWork.Result.GetResult(r => r.Id == id && r.SessionId == selectSession.Id);
 
             if (result == null)
             {
@@ -97,11 +105,17 @@ namespace SchoolApp.Application.Services
             var resultDto = new ResultDto
             {
                 StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
-                SubjectName = result.Subject.Name,
-                Level = result.Level.LevelName,
-                ContinuousAssessment = result.ContinuousAssessment,
-                ExamScore = result.ExamScore,
-                TotalScore = result.TotalScore
+                Level = result.Level?.LevelName,
+                Terms = result.Terms,
+                Remark = result.Remark,
+                SubjectScores = result.SubjectScores.Select(s => new SubjectScoreDto
+                {
+                    SubjectName = s.Subject?.Name,
+                    ContinuousAssessment = s.ContinuousAssessment,
+                    ExamScore = s.ExamScore,
+                    TotalScore = s.ContinuousAssessment + s.ExamScore
+                }).ToList()
+                
             };
 
             response.Data = resultDto;
@@ -110,28 +124,35 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAll(Guid studentId)
+        public async Task<BaseResponse<ResultDto>> CheckResult(Guid studentId)
         {
-            var response = new BaseResponse<IEnumerable<ResultDto>>();
-            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var result = await _unitOfWork.Result.GetAllResult(r => (r.StudentId == studentId) && (r.Session == session));
-            
-            if (result is null)
+            var response = new BaseResponse<ResultDto>();
+            var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
+            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == studentId && r.SessionId == selectSession.Id);
+
+            if (result == null)
             {
-                response.Message = "Result is not availlable currently";
+                response.Message = "Result not found";
                 return response;
             }
 
-            response.Data = result.Select(
-                result => new ResultDto{
-                    StudentName = $"{result.Student.FirstName} {result.Student.LastName}",
-                    SubjectName = result.Subject.Name,
-                    Level = result.Level.LevelName,
-                    ContinuousAssessment = result.ContinuousAssessment,
-                    ExamScore = result.ExamScore,
-                    TotalScore = result.TotalScore 
+            var resultDto = new ResultDto
+            {
+                StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
+                Level = result.Level?.LevelName,
+                Terms = result.Terms,
+                Remark = result.Remark,
+                SubjectScores = result.SubjectScores.Select(s => new SubjectScoreDto
+                {
+                    SubjectName = s.Subject?.Name,
+                    ContinuousAssessment = s.ContinuousAssessment,
+                    ExamScore = s.ExamScore,
+                    TotalScore = s.ContinuousAssessment + s.ExamScore
+                }).ToList()
+                
+            };
 
-            }).ToList();
+            response.Data = resultDto;
             response.Message = "Success";
             response.Status = true;
             return response;
@@ -140,7 +161,7 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<IEnumerable<ResultDto>>();
             var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var result = await _unitOfWork.Result.GetAllResult(r => (r.SubjectId == subjectId) && (r.Session == session));
+            var result = await _unitOfWork.Result.GetAllResult(r => r.Session == session);
             
             if (result is null)
             {
@@ -150,37 +171,43 @@ namespace SchoolApp.Application.Services
 
             response.Data = result.Select(
                 result => new ResultDto{
-                    StudentName = $"{result.Student.FirstName} {result.Student.LastName}",
-                    SubjectName = result.Subject.Name,
-                    Level = result.Level.LevelName,
-                    ContinuousAssessment = result.ContinuousAssessment,
-                    ExamScore = result.ExamScore,
-                    TotalScore = result.TotalScore 
-
+                    StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
+                    Level = result.Level?.LevelName,
+                    Terms = result.Terms,
+                    Remark = result.Remark,
+                    SubjectScores = result.SubjectScores.Select(s => new SubjectScoreDto
+                    {
+                        SubjectName = s.Subject?.Name,
+                        ContinuousAssessment = s.ContinuousAssessment,
+                        ExamScore = s.ExamScore,
+                        TotalScore = s.ContinuousAssessment + s.ExamScore
+                    }).ToList()
             }).ToList();
             response.Message = "Success";
             response.Status = true;
             return response;
         }
-
-        public async Task<BaseResponse<ResultDto>> Update(ResultDto resultDto, Guid resultId)
+        public async Task<BaseResponse<ResultDto>> Update(ResultDto resultDto, Guid resultId, Guid subjectId)
         {
             var response = new BaseResponse<ResultDto>();
+            var resultExist = await _unitOfWork.Result.ExistsAsync(r => r.Id == resultId);
             var result = await _unitOfWork.Result.Get(r => r.Id == resultId);
 
-            if (result == null)
+            if (!resultExist)
             {
                 response.Message = "result not found";
                 return response;
             }
+            
+            var subjectScore = result.SubjectScores.FirstOrDefault(s => s.SubjectId == subjectId);
+            subjectScore.ContinuousAssessment = resultDto.ContinuousAssessment;
+            subjectScore.ExamScore = resultDto.ExamScore;
+            subjectScore.TotalScore = resultDto.TotalScore;
 
-            result.ContinuousAssessment = resultDto.ContinuousAssessment;
-            result.ExamScore = resultDto.ExamScore;
-            result.TotalScore = resultDto.TotalScore;
             await _unitOfWork.Result.Update(result);
             response.Message = "Success";
             response.Status = true;
             return response;
         }
     }
-}
+} 

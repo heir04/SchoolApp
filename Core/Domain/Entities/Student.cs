@@ -14,5 +14,6 @@ namespace SchoolApp.Core.Domain.Entities
         public User? User { get; set; }
         public Guid UserId { get; set; }
         public IList<StudentSubject>? StudentSubjects { get; set; }
+        public ICollection<Result> Results { get; set; } = new HashSet<Result>();
     }
 }
