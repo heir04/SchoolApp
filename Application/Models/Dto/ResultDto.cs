@@ -5,7 +5,6 @@ namespace SchoolApp.Application.Models.Dto
     public class ResultDto
     {
         public Guid Id { get; set; }
-        public string? SubjectName { get; set; }
         public string? StudentName { get; set; }
         public string? Level { get; set; }
         public double ContinuousAssessment { get; set; }

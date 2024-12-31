@@ -29,9 +29,9 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
         }
 
         [HttpGet("Get")] 
-        public async Task<IActionResult> CheckResult([FromRoute]Guid id)
+        public async Task<IActionResult> CheckResult([FromRoute]Guid studentId)
         {
-            var result = await _resultService.CheckResult(id);
+            var result = await _resultService.CheckResult(studentId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 

@@ -30,7 +30,7 @@ namespace SchoolApp.Application.Services
 
             var user = new User
             {
-                UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
+                // UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(teacherDto.Password),
                 Email = teacherDto.Email
             };

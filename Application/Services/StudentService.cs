@@ -196,7 +196,6 @@ namespace SchoolApp.Application.Services
 
             var user = new User
             {
-                UserName = $"{studentDto.FirstName} {studentDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(studentDto.Password),
                 Email = studentDto.Email
             };

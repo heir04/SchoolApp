@@ -45,7 +45,7 @@ namespace SchoolApp.Application.Services
 
             response.Data = users.Select(
                 user => new UserDto{
-                   UserName = user.UserName,
+                   // UserName = user.UserName,
                    Email = user.Email,         
                 }).ToList();
             response.Status = true;
@@ -65,7 +65,7 @@ namespace SchoolApp.Application.Services
 
             var userDto = new UserDto
             {
-                UserName = user.UserName,
+                // UserName = user.UserName,
                 Email = user.Email
             };
             response.Data = userDto;
@@ -80,7 +80,8 @@ namespace SchoolApp.Application.Services
             var getUser =  _unitOfWork.User.ExistsAsync(x => x.Email == userDto.Email);
             var user = new User
             {
-                UserName = userDto.Email,
+               // UserName = userDto.Email,
+               Email = userDto.Email
             };
             throw new NotImplementedException();
         }
