@@ -141,7 +141,7 @@ namespace SchoolApp.Application.Services
             }
             var user = new User
             {
-               // UserName = $"{adminDto.FirstName} {adminDto.LastName}",
+               UserName = $"{adminDto.FirstName}{adminDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(adminDto.Password),
                 Email = adminDto.Email
             };
@@ -165,7 +165,7 @@ namespace SchoolApp.Application.Services
             {
                 FirstName = adminDto.FirstName,
                 LastName = adminDto.LastName,           
-                Email = adminDto.Email,
+                Email = adminDto.Email?.ToLower(),
                 UserId = user.Id
             };
             var addadmin = await _adminRepository.Register(admin);

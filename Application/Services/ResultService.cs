@@ -168,7 +168,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "Result is not availlable currently";
                 return response;
             }
-
+            
             response.Data = result.Select(
                 result => new ResultDto{
                     StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
@@ -199,10 +199,13 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             
-            var subjectScore = result.SubjectScores.FirstOrDefault(s => s.SubjectId == subjectId);
-            subjectScore.ContinuousAssessment = resultDto.ContinuousAssessment;
-            subjectScore.ExamScore = resultDto.ExamScore;
-            subjectScore.TotalScore = resultDto.TotalScore;
+            var subjectScore = result.SubjectScores.FirstOrDefault();
+            if (subjectScore != null)
+            {
+                subjectScore.ContinuousAssessment = resultDto.ContinuousAssessment;
+                subjectScore.ExamScore = resultDto.ExamScore;
+                subjectScore.TotalScore = resultDto.TotalScore;
+            }
 
             await _unitOfWork.Result.Update(result);
             response.Message = "Success";

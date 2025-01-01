@@ -196,6 +196,7 @@ namespace SchoolApp.Application.Services
 
             var user = new User
             {
+                UserName = $"{studentDto.FirstName}{studentDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(studentDto.Password),
                 Email = studentDto.Email
             };
@@ -234,7 +235,7 @@ namespace SchoolApp.Application.Services
                 StudentId = studentDto.StudentId,
                 FirstName = studentDto.FirstName,
                 LastName = studentDto.LastName,
-                Email = studentDto.Email,
+                Email = studentDto.Email?.ToLower(),
                 LevelId = getlevel.Id,
                 Level = getlevel,
                 UserId = user.Id

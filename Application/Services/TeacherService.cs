@@ -30,9 +30,9 @@ namespace SchoolApp.Application.Services
 
             var user = new User
             {
-                // UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
+                UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
                 Password = BCrypt.Net.BCrypt.HashPassword(teacherDto.Password),
-                Email = teacherDto.Email
+                Email = teacherDto.Email?.ToLower()
             };
             await _unitOfWork.User.Register(user);
 
@@ -55,7 +55,7 @@ namespace SchoolApp.Application.Services
             { 
                 FirstName = teacherDto.FirstName,
                 LastName = teacherDto.LastName,
-                Email = teacherDto.Email,
+                Email = teacherDto.Email?.ToLower(),
                 UserId = user.Id,
                 User = user
             

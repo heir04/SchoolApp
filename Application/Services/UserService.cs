@@ -2,6 +2,7 @@ using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Identity;
+using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
@@ -12,6 +13,7 @@ namespace SchoolApp.Application.Services
         {
             _unitOfWork = unitOfWork;
         }
+
         public async Task<BaseResponse<UserDto>> Delete(Guid id)
         {
             var response = new BaseResponse<UserDto>();
@@ -45,7 +47,6 @@ namespace SchoolApp.Application.Services
 
             response.Data = users.Select(
                 user => new UserDto{
-                   // UserName = user.UserName,
                    Email = user.Email,         
                 }).ToList();
             response.Status = true;
@@ -65,7 +66,7 @@ namespace SchoolApp.Application.Services
 
             var userDto = new UserDto
             {
-                // UserName = user.UserName,
+                UserName = user.UserName,
                 Email = user.Email
             };
             response.Data = userDto;
@@ -74,16 +75,49 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        public Task<BaseResponse<UserDto>> Register(UserDto userDto)
+        public async Task<BaseResponse<UserDto>> Login(UserDto userDto)
         {
             var response = new BaseResponse<UserDto>();
-            var getUser =  _unitOfWork.User.ExistsAsync(x => x.Email == userDto.Email);
-            var user = new User
+           var user = await _unitOfWork.User.GetUser(x =>  x.Email.ToLower() == userDto.Email.ToLower());
+
+            if (user is null)
             {
-               // UserName = userDto.Email,
-               Email = userDto.Email
+                response.Message = "Invalid credentials";
+                return response;
+            }
+
+            var userRole = user.UserRoles.FirstOrDefault();
+            if (userRole == null)
+            {
+                response.Message = "User has no roles assigned";
+                return response;
+            }
+
+            if (userDto.Password == null)
+            {
+                response.Message = "Password cannot be null!";
+                return response;
+            }
+
+            string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
+
+            if (user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
+            {
+                response.Message = $"Incorrect email or password!";
+                return response;
+            }
+
+            response.Data = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                RoleId = userRole.RoleId,
+                RoleName = userRole.Role?.Name ?? string.Empty
             };
-            throw new NotImplementedException();
+            response.Message = "Welcome";
+            response.Status = true;
+
+            return response;
         }
         
         // Password to be hashed later
@@ -91,17 +125,24 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<UserDto>();
 
-            var user = await _unitOfWork.User.Get(u => u.Id == id);
-            if (user is null)
+            var userExist = await _unitOfWork.User.ExistsAsync(u => u.Id == id);
+            if (!userExist)
             {
                 response.Message = "User not found";
                 return response;
             }
+            string saltString = HashingHelper.GenerateSalt();
+            string hashedPassword = HashingHelper.HashPassword(userDto.Password, saltString);
+    
+            var user = await _unitOfWork.User.Get(u => u.Id == id);
+            user.HashSalt = saltString;
+            user.PasswordHash = hashedPassword;
+            user.LastModifiedBy = user.Id;
 
             user.Password = userDto.Password;
             user.LastModifiedBy = user.Id;
             await _unitOfWork.User.Update(user);
-            response.Message = "";
+            response.Message = "Success";
             response.Status = true;
             return response;
         }
