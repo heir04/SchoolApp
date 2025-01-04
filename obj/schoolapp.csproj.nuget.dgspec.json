@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {}
+    "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {
+    "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+        "projectUniqueName": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
         "projectName": "schoolapp",
-        "projectPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+        "projectPath": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
         "packagesPath": "C:\\Users\\Ismail\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\obj\\",
+        "outputPath": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Ismail\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -46,6 +46,10 @@
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[4.0.3, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.10, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
