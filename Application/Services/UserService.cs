@@ -78,7 +78,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<UserDto>> Login(UserDto userDto)
         {
             var response = new BaseResponse<UserDto>();
-           var user = await _unitOfWork.User.GetUser(x =>  x.Email.ToLower() == userDto.Email.ToLower());
+            var user = await _unitOfWork.User.GetUser(x => x.Email == userDto.Email.ToLower());
 
             if (user is null)
             {
@@ -106,13 +106,13 @@ namespace SchoolApp.Application.Services
                 response.Message = $"Incorrect email or password!";
                 return response;
             }
-
+            var roleName = await _unitOfWork.Role.Get(r => r.Id == userRole.Id);
             response.Data = new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 RoleId = userRole.RoleId,
-                RoleName = userRole.Role?.Name ?? string.Empty
+                RoleName = roleName.Name
             };
             response.Message = "Welcome";
             response.Status = true;
@@ -120,7 +120,6 @@ namespace SchoolApp.Application.Services
             return response;
         }
         
-        // Password to be hashed later
         public async Task<BaseResponse<UserDto>> UpdatePassword(UserDto userDto, Guid id)
         {
             var response = new BaseResponse<UserDto>();
@@ -138,9 +137,8 @@ namespace SchoolApp.Application.Services
             user.HashSalt = saltString;
             user.PasswordHash = hashedPassword;
             user.LastModifiedBy = user.Id;
-
-            user.Password = userDto.Password;
             user.LastModifiedBy = user.Id;
+            
             await _unitOfWork.User.Update(user);
             response.Message = "Success";
             response.Status = true;

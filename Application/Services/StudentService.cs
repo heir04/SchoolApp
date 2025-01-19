@@ -3,6 +3,7 @@ using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
+using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
@@ -185,6 +186,10 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Register(StudentDto studentDto)
         {
             var getStudent = await _studentRepository.Get(s => s.Email == studentDto.Email);
+            var defaultPassword = $"{studentDto.FirstName}";
+            string saltString = HashingHelper.GenerateSalt();
+            string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
+
             if (getStudent != null)
             {
                 return new BaseResponse<StudentDto>
@@ -197,7 +202,8 @@ namespace SchoolApp.Application.Services
             var user = new User
             {
                 UserName = $"{studentDto.FirstName}{studentDto.LastName}",
-                Password = BCrypt.Net.BCrypt.HashPassword(studentDto.Password),
+                HashSalt = saltString,
+                PasswordHash = hashedPassword,
                 Email = studentDto.Email
             };
             await _userRepository.Register(user);
@@ -218,6 +224,7 @@ namespace SchoolApp.Application.Services
                 RoleId = role.Id
             };
             _context.UserRoles.Add(userRole);
+            user.UserRoles.Add(userRole);
 
             var getlevel = await _levelRepository.Get(l => l.LevelName == studentDto.LevelName);
             if (getlevel == null)
@@ -245,6 +252,7 @@ namespace SchoolApp.Application.Services
             student.LastModifiedBy = addStudent.Id;
             student.IsDeleted = false;
             await _studentRepository.Update(student);
+        
 
             // var studentDTo = new StudentDto
             // {
@@ -259,7 +267,7 @@ namespace SchoolApp.Application.Services
 
             return new BaseResponse<StudentDto>
             {
-                Message = "Studennt registered succesfully",
+                Message = "Student registered succesfully",
                 Status = true,
                 // Data = studentDTo
             };
@@ -287,11 +295,9 @@ namespace SchoolApp.Application.Services
                 };
             }
             getUser.Email = studentDto.Email;
-            getUser.Password = studentDto.Password;
             await _userRepository.Update(getUser);
 
             student.User.Email = studentDto.Email ?? student.User.Email;
-            student.User.Password = studentDto.Password ?? student.User.Password;
             student.FirstName = studentDto.FirstName ?? student.FirstName;
             student.LastName = studentDto.LastName ?? student.LastName;
             //student.LevelId = studentDto.LevelId;

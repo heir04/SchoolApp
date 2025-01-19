@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
@@ -13,11 +14,12 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
         {
            _resultService = resultService;
         }
-
+        
+        [Authorize(Roles = "Teacher")]
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromForm] ResultDto resultDto, Guid studentId, Guid subjectId, Guid levelId)
+        public async Task<IActionResult> Register([FromForm] ResultDto resultDto, Guid studentId)
         {
-            var result = await _resultService.Create(resultDto, studentId, subjectId);
+            var result = await _resultService.Create(resultDto, studentId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
@@ -27,11 +29,12 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
             var result = await _resultService.Get(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
-
+        
+        [Authorize(Roles = "Student")]
         [HttpGet("Get")] 
-        public async Task<IActionResult> CheckResult([FromRoute]Guid studentId)
+        public async Task<IActionResult> CheckResult()
         {
-            var result = await _resultService.CheckResult(studentId);
+            var result = await _resultService.CheckResult();
             return result.Status ? Ok(result) : BadRequest(result);
         }
 

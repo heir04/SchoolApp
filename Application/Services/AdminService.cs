@@ -3,6 +3,7 @@ using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
+using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
@@ -130,7 +131,11 @@ namespace SchoolApp.Application.Services
 
         public async Task<BaseResponse<AdminDto>> Register(AdminDto adminDto)
         {
-            var getadmin = await _adminRepository.Get(a => a.Email == adminDto.Email);
+            var getadmin = await _adminRepository.Get(a => a.Email == adminDto.Email.ToLower());
+            var defaultPassword = $"{adminDto.FirstName}";
+            string saltString = HashingHelper.GenerateSalt();
+            string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
+
             if (getadmin != null)
             {
                 return new BaseResponse<AdminDto>
@@ -141,9 +146,10 @@ namespace SchoolApp.Application.Services
             }
             var user = new User
             {
-               UserName = $"{adminDto.FirstName}{adminDto.LastName}",
-                Password = BCrypt.Net.BCrypt.HashPassword(adminDto.Password),
-                Email = adminDto.Email
+                UserName = $"{adminDto.FirstName}{adminDto.LastName}",
+                HashSalt = saltString,
+                PasswordHash = hashedPassword,
+                Email = adminDto.Email.ToLower()
             };
             await _userRepository.Register(user);
             var role = await _roleRepository.Get(r =>r.Name == "Admin");
@@ -193,7 +199,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Update(Guid id, AdminDto adminDto)
         {
             var admin = await _adminRepository.Get(a => a.Id == id);
-            if (admin == null)
+            var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id);
+            if (!adminExist)
             {
                 return new BaseResponse<AdminDto>
                 {
@@ -211,11 +218,9 @@ namespace SchoolApp.Application.Services
                 };
             }
             getUser.Email = adminDto.Email;
-            getUser.Password = adminDto.Password;
             await _userRepository.Update(getUser);
 
             admin.User.Email = adminDto.Email ?? admin.User.Email;
-            admin.User.Password = adminDto.Password ?? admin.User.Password;
             admin.FirstName = adminDto.FirstName ?? admin.FirstName;
             admin.LastName = adminDto.LastName ?? admin.LastName;
             await _adminRepository.Update(admin);

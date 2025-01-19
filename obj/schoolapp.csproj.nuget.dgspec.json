@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {}
+    "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {
+    "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+        "projectUniqueName": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
         "projectName": "schoolapp",
-        "projectPath": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+        "projectPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
         "packagesPath": "C:\\Users\\Ismail\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Ismail\\Desktop\\SchoolApp\\obj\\",
+        "outputPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Ismail\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -67,7 +67,7 @@
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.IdentityModel.Tokens": {
               "target": "Package",

@@ -3,6 +3,7 @@ using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
+using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
@@ -21,6 +22,10 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Register(TeacherDto teacherDto)
         {
             var response = new BaseResponse<TeacherDto>();
+            var defaultPassword = $"{teacherDto.FirstName}";
+            string saltString = HashingHelper.GenerateSalt();
+            string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
+
             var emailExist = await _unitOfWork.Teacher.Get(t => t.Email == teacherDto.Email);
             if (emailExist is not null)
             {
@@ -31,15 +36,15 @@ namespace SchoolApp.Application.Services
             var user = new User
             {
                 UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
-                Password = BCrypt.Net.BCrypt.HashPassword(teacherDto.Password),
+                HashSalt = saltString,
+                PasswordHash = hashedPassword,
                 Email = teacherDto.Email?.ToLower()
             };
             await _unitOfWork.User.Register(user);
 
             var role = await _unitOfWork.Role.Get(r => r.Name == "Teacher");
-            if (role == null)
+            if (role is null)
             {
-                
                 response.Message = "Role not found";
                 response.Status = false;
             }

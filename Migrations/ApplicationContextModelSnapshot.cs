@@ -15,7 +15,7 @@ namespace schoolapp.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
             modelBuilder.Entity("SchoolApp.Core.Domain.Entities.Admin", b =>
                 {
@@ -519,6 +519,9 @@ namespace schoolapp.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("HashSalt")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("IsDeleteBy")
                         .HasColumnType("TEXT");
 
@@ -534,7 +537,7 @@ namespace schoolapp.Migrations
                     b.Property<DateTime?>("LastModifiedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")

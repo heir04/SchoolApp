@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
@@ -5,20 +6,20 @@ using SchoolApp.Core.Domain.Entities;
 
 namespace SchoolApp.Application.Services
 {
-    public class ResultService : IResultService
+    public class ResultService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IResultService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public ResultService(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
         public async Task<BaseResponse<ResultDto>> Create(
-            ResultDto resultDto, Guid studentId, Guid subjectId)
+            ResultDto resultDto, Guid studentId)
         {
             var response = new BaseResponse<ResultDto>();
 
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId.ToString() == userIdClaim);
             var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var Subject = await _unitOfWork.Subject.GetAsync(subjectId);
+            var subject = teacher.TeacherSubjects.SingleOrDefault();
             var student = await _unitOfWork.Student.GetAsync(studentId);
             var checkResult =  await _unitOfWork.Result
                 .ExistsAsync(r => r.SessionId == selectSession.Id && r.StudentId == studentId && 
@@ -50,8 +51,8 @@ namespace SchoolApp.Application.Services
 
             var subjectScore = new SubjectScore
             {
-                SubjectId = Subject.Id,
-                Subject = Subject,
+                SubjectId = subject.SubjectId,
+                Subject = subject.Subject,
                 ContinuousAssessment = resultDto.ContinuousAssessment,
                 ExamScore = resultDto.ExamScore,
                 TotalScore = resultDto.ContinuousAssessment + resultDto.ExamScore,
@@ -124,11 +125,13 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        public async Task<BaseResponse<ResultDto>> CheckResult(Guid studentId)
+        public async Task<BaseResponse<ResultDto>> CheckResult()
         {
             var response = new BaseResponse<ResultDto>();
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            var checkStudent = await _unitOfWork.Student.Get(s => s.UserId.ToString() == userIdClaim);
             var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == studentId && r.SessionId == selectSession.Id);
+            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == selectSession.Id);
 
             if (result == null)
             {
