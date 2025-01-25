@@ -11,50 +11,40 @@ namespace SchoolApp.Application.Services
     public class StudentService : IStudentService
     {
         private readonly ApplicationContext _context;
-        private readonly IStudentRepository _studentRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
-        private readonly ILevelRepository _levelRepository;
-        public StudentService(IStudentRepository studentRepository,
-        IUserRepository userRepository, IRoleRepository roleRepository,
-        ApplicationContext context, ILevelRepository levelRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public StudentService(IUnitOfWork unitOfWork, ApplicationContext context)
         {
             _context = context;
-            _studentRepository = studentRepository;
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
-            _levelRepository = levelRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<BaseResponse<StudentDto>> Delete(Guid id)
         {
-            var student = await _studentRepository.Get(a => a.Id == id);
+            var response = new BaseResponse<StudentDto>();
+            var student = await _unitOfWork.Student.Get(a => a.Id == id);
             if (student == null || student.IsDeleted == true)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "not found or is already deleted",
-                    Status = false
-                };
+                
+                response.Message = "not found or is already deleted";
+                response.Status = false;
+                return response;
             }
             student.IsDeleted = true;
-            return new BaseResponse<StudentDto>
-            {
-                Message = "Student deleted",
-                Status = true
-            };
+
+            response.Message = "Student deleted";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<StudentDto>> Get(Guid id)
         {
-            var student = await _studentRepository.Get(s => s.Id == id);
+            var response =  new BaseResponse<StudentDto>();
+            var student = await _unitOfWork.Student.Get(s => s.Id == id);
             if (student == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "not found",
-                    Status = false
-                };
+                response.Message = "not found";
+                response.Status = false;
+                return response;
             }
             var studentDto = new StudentDto
             {
@@ -64,24 +54,22 @@ namespace SchoolApp.Application.Services
                 Email = student.Email,
                 //LevelId = student.LevelId,
             };
-            return new BaseResponse<StudentDto>
-            {
-                Data = studentDto,
-                Message = "getStudent gotten",
-                Status = true
-            };
+           
+            response.Data = studentDto;
+            response.Message = "getStudent gotten";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<StudentDto>> Get(string email)
         {
-            var student = await _studentRepository.Get(s =>s.Email == email);
+            var response = new BaseResponse<StudentDto>();
+            var student = await _unitOfWork.Student.Get(s =>s.Email == email);
             if (student == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "not found",
-                    Status = false
-                };
+                response.Message = "not found";
+                response.Status = false;
+                return response;
             }
             var studentDto = new StudentDto
             {
@@ -90,24 +78,22 @@ namespace SchoolApp.Application.Services
                 LastName = student.LastName,
                 Email = student.Email,
             };
-            return new BaseResponse<StudentDto>
-            {
-                Data = studentDto,
-                Message = "getStudent gotten",
-                Status = true
-            };
+            
+            response.Data = studentDto;
+            response.Message = "getStudent gotten";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<IEnumerable<StudentDto>>> GetAll()
         {
-            var students = await _studentRepository.GetAll();
+            var response = new BaseResponse<IEnumerable<StudentDto>>();
+            var students = await _unitOfWork.Student.GetAll();
             if (students == null)
             {
-                return new BaseResponse<IEnumerable<StudentDto>>
-                {
-                    Message = "no getStudent in this level",
-                    Status = false
-                };
+                response.Message = "no getStudent in this level";
+                response.Status = false;
+                return response;
             }
 
             var studentDtos = students.Select(s => new StudentDto
@@ -119,24 +105,22 @@ namespace SchoolApp.Application.Services
                 LevelName = s.Level?.LevelName,
                 Email = s.Email,
             }).ToList();
-            return new BaseResponse<IEnumerable<StudentDto>>
-            {
-                Message = "list of students",
-                Status = true,
-                Data = studentDtos
-            };
+            
+            response.Message = "list of students";
+            response.Status = true;
+            response.Data = studentDtos;
+            return response;  
         }
 
         public async Task<BaseResponse<IEnumerable<StudentDto>>> GetAll(Guid levelId)
         {
-            var students = await _studentRepository.GetByExpression(s => s.LevelId == levelId);
+            var response = new BaseResponse<IEnumerable<StudentDto>>();
+            var students = await _unitOfWork.Student.GetByExpression(s => s.LevelId == levelId);
             if (students == null)
             {
-                return new BaseResponse<IEnumerable<StudentDto>>
-                {
-                    Message = "no Student registered in this level",
-                    Status = false
-                };
+                response.Message = "no Student registered in this level";
+                response.Status = false;
+                return response;
             }
 
             var studentDtos = students.Select(s => new StudentDto
@@ -148,24 +132,22 @@ namespace SchoolApp.Application.Services
                 LevelId = s.LevelId,
                 LevelName = s.Level?.LevelName
             }).ToList();
-            return new BaseResponse<IEnumerable<StudentDto>>
-            {
-                Message = "list of students",
-                Status = true,
-                Data = studentDtos
-            };
+
+            response.Message = "list of students";
+            response.Status = true;
+            response.Data = studentDtos;
+            return response;
         }
 
         public async Task<BaseResponse<StudentDto>> GetByStudentId(string studentId)
         {
-            var student = await _studentRepository.Get(s => s.StudentId == studentId);
+            var response = new BaseResponse<StudentDto>();
+            var student = await _unitOfWork.Student.Get(s => s.StudentId == studentId);
             if (student == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "not found",
-                    Status = false
-                };
+               
+                response.Message = "not found";
+                response.Status = false;
             }
             var studentDto = new StudentDto
             {
@@ -175,28 +157,26 @@ namespace SchoolApp.Application.Services
                 Email = student.Email,
                 LevelName = student.LastName  
             };
-            return new BaseResponse<StudentDto>
-            {
-                Data = studentDto,
-                Message = "getStudent gotten",
-                Status = true
-            };
+           
+            response.Data = studentDto;
+            response.Message = "getStudent gotten";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<StudentDto>> Register(StudentDto studentDto)
         {
-            var getStudent = await _studentRepository.Get(s => s.Email == studentDto.Email);
+            var response = new BaseResponse<StudentDto>();
+            var getStudent = await _unitOfWork.Student.Get(s => s.Email == studentDto.Email);
             var defaultPassword = $"{studentDto.FirstName}";
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
 
             if (getStudent != null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "already ex ist",
-                    Status = false
-                };
+                
+                response.Message = "already exist";
+                response.Status = false;
             }
 
             var user = new User
@@ -206,16 +186,14 @@ namespace SchoolApp.Application.Services
                 PasswordHash = hashedPassword,
                 Email = studentDto.Email
             };
-            await _userRepository.Register(user);
+            await _unitOfWork.User.Register(user);
 
-            var role = await _roleRepository.Get(r => r.Name == "Student");
+            var role = await _unitOfWork.Role.Get(r => r.Name == "Student");
             if (role == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "Role not found",
-                    Status = false
-                };
+                response.Message = "Role not found";
+                response.Status = false;
+
             }
 
             var userRole = new UserRole
@@ -226,14 +204,11 @@ namespace SchoolApp.Application.Services
             _context.UserRoles.Add(userRole);
             user.UserRoles.Add(userRole);
 
-            var getlevel = await _levelRepository.Get(l => l.LevelName == studentDto.LevelName);
+            var getlevel = await _unitOfWork.Level.Get(l => l.LevelName == studentDto.LevelName);
             if (getlevel == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "level not found",
-                    Status = false
-                };
+                response.Message = "level not found";
+                response.Status = false;
             }
             
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
@@ -247,11 +222,12 @@ namespace SchoolApp.Application.Services
                 Level = getlevel,
                 UserId = user.Id
             };
-            var addStudent = await _studentRepository.Register(student);
+            var addStudent = await _unitOfWork.Student.Register(student);
+            await _unitOfWork.SaveChangesAsync();
             student.CreatedBy = addStudent.Id;
             student.LastModifiedBy = addStudent.Id;
             student.IsDeleted = false;
-            await _studentRepository.Update(student);
+            await _unitOfWork.Student.Update(student);
         
 
             // var studentDTo = new StudentDto
@@ -265,50 +241,42 @@ namespace SchoolApp.Application.Services
             //     //LevelId = addStudent.LevelId
             // };
 
-            return new BaseResponse<StudentDto>
-            {
-                Message = "Student registered succesfully",
-                Status = true,
+          
+            response.Message = "Student registered succesfully";
+            response.Status = true;
                 // Data = studentDTo
-            };
+            return response;
         }
 
         public async Task<BaseResponse<StudentDto>> Update(StudentDto studentDto, Guid id)
         {
-            var student = await _studentRepository.Get(s => s.Id == id);
+            var response = new BaseResponse<StudentDto>();
+            var student = await _unitOfWork.Student.Get(s => s.Id == id);
             if (student == null)
             {
-                return new BaseResponse<StudentDto> 
-                {
-                    Message = "not found",
-                    Status = false
-                };
+                response.Message = "not found";
+                response.Status = false;
             }
 
-            var getUser = await _userRepository.Get(u => u.Email == studentDto.Email);
+            var getUser = await _unitOfWork.User.Get(u => u.Email == studentDto.Email);
             if (getUser == null)
             {
-                return new BaseResponse<StudentDto>
-                {
-                    Message = "User not found",
-                    Status = false
-                };
+                response.Message = "User not found";
+                response.Status = false;
             }
             getUser.Email = studentDto.Email;
-            await _userRepository.Update(getUser);
+            await _unitOfWork.User.Update(getUser);
 
             student.User.Email = studentDto.Email ?? student.User.Email;
             student.FirstName = studentDto.FirstName ?? student.FirstName;
             student.LastName = studentDto.LastName ?? student.LastName;
             //student.LevelId = studentDto.LevelId;
-            await _studentRepository.Update(student);
+            await _unitOfWork.Student.Update(student);
+            await _unitOfWork.SaveChangesAsync();
 
-            return new BaseResponse<StudentDto> 
-            {
-                Message = "udated succesfully",
-                Status = true
-            };
-
+            response.Message = "updated succesfully";
+            response.Status = true;
+            return response;
         }
     }
 }
