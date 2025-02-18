@@ -24,42 +24,33 @@ namespace SchoolApp.Application.Services
 
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
         {
+            var response = new BaseResponse<AdminDto>();
             var admin = await _adminRepository.Get(a => a.Id == id);
             if (admin == null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "Admin not found",
-                    Status = false
-                };
-
+                response.Message = "Admin not found";
+                return response;
             }
             if (admin.IsDeleted == true)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "Admin already Deleted",
-                    Status = false
-                };
+                response.Message = "Admin already Deleted";
+                return response;
             }
             admin.IsDeleted = true;
-            return new BaseResponse<AdminDto>
-            {
-                Message = "Admin Deleted ",
-                Status = true
-            };
+        
+            response.Message = "Admin Deleted";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<AdminDto>> Get(Guid id)
         {
+            var response = new BaseResponse<AdminDto>();
             var admin = await _adminRepository.Get(a => a.Id == id);
             if(admin == null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "admin not found",
-                    Status = false
-                };
+                response.Message = "admin not found";
+                return response;
             }
             var adminDto = new AdminDto
             {
@@ -68,24 +59,20 @@ namespace SchoolApp.Application.Services
                 FirstName = admin.FirstName,
                 LastName = admin.LastName
             };
-            return new BaseResponse<AdminDto>
-            {
-                Message = "admin gotten",
-                Status = true,
-                Data = adminDto
-            };
+        
+            response.Message = "admin gotten";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<AdminDto>> Get(string email)
         {
+            var response = new BaseResponse<AdminDto>();
             var admin = await _adminRepository.Get(a => a.Email == email);
             if (admin == null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "admin not found",
-                    Status = false
-                };
+                response.Message = "admin gotten";
+                return response;
             }
             var adminDto = new AdminDto
             {
@@ -94,24 +81,20 @@ namespace SchoolApp.Application.Services
                 FirstName = admin.FirstName,
                 LastName = admin.LastName
             };
-            return new BaseResponse<AdminDto>
-            {
-                Message = "admin gotten",
-                Status = true,
-                Data = adminDto
-            };
+            
+            response.Message = "admin gotten";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<IEnumerable<AdminDto>>> GetAll()
         {
+            var response = new BaseResponse<IEnumerable<AdminDto>>();
             var admins = await _adminRepository.GetAll();
             if (admins == null)
-            {
-                return new BaseResponse<IEnumerable<AdminDto>>
-                {
-                    Message = "Not found",
-                    Status = false
-                };
+            {   
+                response.Message = "admins not found";
+                return response;
             }
 
             var adminDtos = admins.Select(a => new AdminDto
@@ -121,16 +104,16 @@ namespace SchoolApp.Application.Services
                 LastName = a.LastName,
                 Email = a.Email
             }).ToList();
-            return new BaseResponse<IEnumerable<AdminDto>>
-            {
-                Data = adminDtos,
-                Message = "list of admins",
-                Status = true
-            };
+        
+            response.Data = adminDtos;
+            response.Message = "List of admins";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<AdminDto>> Register(AdminDto adminDto)
         {
+            var response = new BaseResponse<AdminDto>();
             var getadmin = await _adminRepository.Get(a => a.Email == adminDto.Email.ToLower());
             var defaultPassword = $"{adminDto.FirstName}";
             string saltString = HashingHelper.GenerateSalt();
@@ -138,11 +121,8 @@ namespace SchoolApp.Application.Services
 
             if (getadmin != null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "email already exists",
-                    Status = false
-                };
+                response.Message = "Email already exist";
+                return response;
             }
             var user = new User
             {
@@ -155,11 +135,8 @@ namespace SchoolApp.Application.Services
             var role = await _roleRepository.Get(r =>r.Name == "Admin");
             if (role == null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "Role not found",
-                    Status = false
-                };
+                response.Message = "Role not found";
+                return response;
             }
             var userRole = new UserRole
             {
@@ -190,26 +167,24 @@ namespace SchoolApp.Application.Services
                 LastName = adminDto.LastName,
             };
 
-            return new BaseResponse<AdminDto>
-            { 
-                Data = adminDTO, 
-                Message = "Admin registered succesfuly",
-                Status = true
-            };
+             
+            response.Data = adminDTO;
+            response.Message = "Admin registered succesfuly";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<AdminDto>> Update(Guid id, AdminDto adminDto)
         {
+            var response = new BaseResponse<AdminDto>();
             var admin = await _adminRepository.Get(a => a.Id == id);
             var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id);
             if (!adminExist)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "admin found",
-                    Status = false
-                };
+               response.Message = "admin found";
+               return response;
             }
+            
             var getUser = await _userRepository.Get(u => u.Email == adminDto.Email);
             if (getUser == null)
             {
@@ -227,11 +202,10 @@ namespace SchoolApp.Application.Services
             admin.LastName = adminDto.LastName ?? admin.LastName;
             await _adminRepository.Update(admin);
 
-            return new BaseResponse<AdminDto>
-            {
-                Message = "Admin updated succesfully",
-                Status = true
-            };
+           
+            response.Message = "Admin updated succesfully";
+            response.Status = true;
+            return response;
         }
     }
 }

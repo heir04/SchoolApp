@@ -116,7 +116,6 @@ namespace SchoolApp.Application.Services
             };
             response.Message = "Welcome";
             response.Status = true;
-
             return response;
         }
         

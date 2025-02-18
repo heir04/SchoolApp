@@ -15,14 +15,12 @@ namespace SchoolApp.Application.Services
 
         public async Task<BaseResponse<RoleDto>> CreateRole(RoleDto roleDto)
         {
+            var response = new BaseResponse<RoleDto>();
             var role = await _roleRepository.Get(r => r.Name == roleDto.Name);
             if (role != null)
             {
-                return new BaseResponse<RoleDto>
-                {
-                    Message = "Role already exists",
-                    Status = false
-                };
+                response.Message = "Role already exists";
+                return response;
             }
 
             var newRole = new Role
@@ -32,15 +30,14 @@ namespace SchoolApp.Application.Services
 
             await _roleRepository.Register(newRole);
 
-            return new BaseResponse<RoleDto>
-            {
-                Message = "Role created succesfully",
-                Status = true
-            };
+            response.Message = "Role created succesfully";
+            response.Status = true;
+            return response;
         }
 
         public async Task<BaseResponse<IEnumerable<RoleDto>>> GetRolesByUserId(Guid userId)
         {
+            var response = new BaseResponse<IEnumerable<RoleDto>>();
             var roles = await _roleRepository.GetRolesByUserId(userId);
             var roleDtos = roles.Select(r => new RoleDto
             {
@@ -48,13 +45,10 @@ namespace SchoolApp.Application.Services
                 Name = r.Name,
             }).ToList();
 
-            return new BaseResponse<IEnumerable<RoleDto>>
-            {
-                Message = "List gotten",
-                Status = true,
-                Data = roleDtos
-            };
-           
+            response.Message = "List gotten";
+            response.Status = true;
+            response.Data = roleDtos;
+            return response;
         }
     }
 }

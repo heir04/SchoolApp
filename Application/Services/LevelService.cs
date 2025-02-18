@@ -14,14 +14,12 @@ namespace SchoolApp.Application.Services
         }
         public async Task<BaseResponse<LevelDto>> Create(LevelDto levelDto)
         {
+            var response = new BaseResponse<LevelDto>();
             var getLevel = await _levelRepository.Get(l => l.LevelName == levelDto.LevelName);
             if (getLevel != null)
             {
-                return new BaseResponse<LevelDto>
-                {
-                    Message = "already exist",
-                    Status = false
-                };
+                response.Message = "already exist";   
+                return response;
             }
 
             var level = new Level
@@ -37,12 +35,10 @@ namespace SchoolApp.Application.Services
                 LevelName = level.LevelName
             };
 
-            return new BaseResponse<LevelDto>
-            {
-                Message = "created succesfully",
-                Status = true,
-                Data = levelDTO
-            };
+            response.Message = "created succesfully";
+            response.Status = true;
+            response.Data = levelDTO;
+            return response;
         }
 
         public async Task<BaseResponse<LevelDto>> Delete(Guid levelId)
