@@ -62,5 +62,10 @@ namespace SchoolApp.Infrastructure.Repositories
             return get;
         }
 
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
     }
 }

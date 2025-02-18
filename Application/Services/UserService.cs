@@ -106,13 +106,13 @@ namespace SchoolApp.Application.Services
                 response.Message = $"Incorrect email or password!";
                 return response;
             }
-            var roleName = await _unitOfWork.Role.Get(r => r.Id == userRole.Id);
+            var role = await _unitOfWork.Role.Get(r => r.Id == userRole.RoleId);
             response.Data = new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 RoleId = userRole.RoleId,
-                RoleName = roleName.Name
+                RoleName = role.Name
             };
             response.Message = "Welcome";
             response.Status = true;

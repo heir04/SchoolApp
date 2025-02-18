@@ -14,5 +14,6 @@ namespace SchoolApp.Application.Abstraction.IRepositories
         Task<List<T>> GetAllByIdsAsync(List<Guid> ids);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> expression);
         Task<IList<T>> GetByExpression(Expression<Func<T, bool>> expression);
+        Task<int> SaveChangesAsync();
     }
 }

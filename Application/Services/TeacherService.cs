@@ -84,6 +84,7 @@ namespace SchoolApp.Application.Services
            teacher.TeacherSubjects = teacherSubjects;
             
             await _unitOfWork.Teacher.Register(teacher);
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Created successfully";
             response.Status = true;
             return response;

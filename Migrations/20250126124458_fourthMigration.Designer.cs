@@ -11,7 +11,7 @@ using SchoolApp.Infrastructure.Context;
 namespace schoolapp.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20250119111717_fourthMigration")]
+    [Migration("20250126124458_fourthMigration")]
     partial class fourthMigration
     {
         /// <inheritdoc />

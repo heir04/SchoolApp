@@ -62,6 +62,7 @@ namespace SchoolApp.Application.Services
            student.Results.Add(result);
 
            await _unitOfWork.Result.Register(result);
+           await _unitOfWork.SaveChangesAsync();
            response.Message = "Success";
            response.Status = true;
            return response;

@@ -5,7 +5,7 @@ using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Infrastructure.Presentation.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class RoleController : ControllerBase

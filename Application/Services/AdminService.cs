@@ -151,7 +151,7 @@ namespace SchoolApp.Application.Services
                 PasswordHash = hashedPassword,
                 Email = adminDto.Email.ToLower()
             };
-            await _userRepository.Register(user);
+            
             var role = await _roleRepository.Get(r =>r.Name == "Admin");
             if (role == null)
             {
@@ -174,7 +174,9 @@ namespace SchoolApp.Application.Services
                 Email = adminDto.Email?.ToLower(),
                 UserId = user.Id
             };
+            await _userRepository.Register(user);
             var addadmin = await _adminRepository.Register(admin);
+            await _adminRepository.SaveChangesAsync();
             admin.CreatedBy = addadmin.Id;
             admin.LastModifiedBy = addadmin.Id;
             admin.IsDeleted = false;
