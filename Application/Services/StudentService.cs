@@ -244,7 +244,7 @@ namespace SchoolApp.Application.Services
           
             response.Message = "Student registered succesfully";
             response.Status = true;
-                // Data = studentDTo
+            // Data = studentDTo
             return response;
         }
 

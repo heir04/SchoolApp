@@ -17,13 +17,19 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<ResultDto>();
 
             var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId.ToString() == userIdClaim);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+
+            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId);
             var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
             var subject = teacher.TeacherSubjects.SingleOrDefault();
             var student = await _unitOfWork.Student.GetAsync(studentId);
-            var checkResult =  await _unitOfWork.Result
+            var checkResult = await _unitOfWork.Result
                 .ExistsAsync(r => r.SessionId == selectSession.Id && r.StudentId == studentId && 
-                              r.LevelId == student.LevelId);
+                                  r.LevelId == student.LevelId);
             
             if (selectSession == null)
             {
@@ -217,4 +223,4 @@ namespace SchoolApp.Application.Services
             return response;
         }
     }
-} 
+}
