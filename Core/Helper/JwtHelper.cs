@@ -5,9 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace SchoolApp.Core.Helper
 {
-    public class JwtHelper
+    public class JwtHelper(IConfiguration configuration)
     {
-        public static string GenerateToken(string username, string role, Guid userId)
+        private readonly IConfiguration _configuration = configuration;
+        public string GenerateToken(string username, string role, Guid userId)
         {
             var claims = new[]
             {
@@ -16,12 +17,12 @@ namespace SchoolApp.Core.Helper
                 new Claim(JwtRegisteredClaimNames.Jti, userId.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKey"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
+ 
             var token = new JwtSecurityToken(
-                issuer: "JwtSettings:Issuer",
-                audience: "JwtSettings:Audience",
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddHours(1),
                 signingCredentials: creds);

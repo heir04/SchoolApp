@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController : ControllerBase
+    public class StudentController(IStudentService studentService) : ControllerBase
     {
-        private readonly IStudentService _studentService;
-        public StudentController(IStudentService studentService) 
-        {
-            _studentService = studentService;
-        }
+        private readonly IStudentService _studentService = studentService;
+        // public StudentController(IStudentService studentService) 
+        // {
+        //     _studentService = studentService;
+        // }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] StudentDto studentDto)
@@ -42,6 +43,7 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {

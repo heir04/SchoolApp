@@ -5,13 +5,13 @@ using SchoolApp.Core.Domain.Identity;
 
 namespace SchoolApp.Application.Services
 {
-    public class RoleService : IRoleService
+    public class RoleService(IRoleRepository roleRepository) : IRoleService
     {
-        private readonly IRoleRepository _roleRepository;
-        public RoleService(IRoleRepository roleRepository) 
-        {
-            _roleRepository = roleRepository;
-        }
+        private readonly IRoleRepository _roleRepository = roleRepository;
+        // public RoleService(IRoleRepository roleRepository) 
+        // {
+        //     _roleRepository = roleRepository;
+        // }
 
         public async Task<BaseResponse<RoleDto>> CreateRole(RoleDto roleDto)
         {
@@ -26,6 +26,7 @@ namespace SchoolApp.Application.Services
             var newRole = new Role
             {
                 Name = roleDto.Name,
+                CreatedOn = DateTime.Today
             };
 
             await _roleRepository.Register(newRole);

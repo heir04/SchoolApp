@@ -3,17 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ResultController : ControllerBase
+    public class ResultController(IResultService resultService) : ControllerBase
     {
-        private readonly IResultService _resultService;
-        public ResultController(IResultService resultService)
-        {
-           _resultService = resultService;
-        }
+        private readonly IResultService _resultService = resultService;
+        // public ResultController(IResultService resultService)
+        // {
+        //    _resultService = resultService;
+        // }
         
         [Authorize(Roles = "Teacher")]
         [HttpPost("Register")]
@@ -30,7 +30,7 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
-        [Authorize(Roles = "Student")]
+        // [Authorize(Roles = "Student")]
         [HttpGet("Get")] 
         public async Task<IActionResult> CheckResult()
         {

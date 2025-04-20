@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LevelController : ControllerBase
+    public class LevelController(ILevelService levelService) : ControllerBase
     {
-        private readonly ILevelService _levelService;
-        public LevelController(ILevelService levelService) 
-        {
-            _levelService = levelService;
-        }
+        private readonly ILevelService _levelService = levelService;
+        // public LevelController(ILevelService levelService) 
+        // {
+        //     _levelService = levelService;
+        // }
 
         [HttpPost("Create")]
         public async Task<IActionResult> Create([FromForm]LevelDto levelDto)
@@ -21,6 +22,7 @@ namespace SchoolApp.Infrastructure.Presentation.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {

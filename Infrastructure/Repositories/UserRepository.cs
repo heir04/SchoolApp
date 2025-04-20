@@ -17,9 +17,8 @@ namespace SchoolApp.Infrastructure.Repositories
         {
             var user =  _context.Users
                 .Where(expression)
-                .Include(x => x.Teacher)
-                .Include(x => x.Student)
-                .SingleOrDefaultAsync(expression);
+                .Include(x => x.UserRoles)
+                .FirstOrDefaultAsync(expression);
             return await user;
         }
     }

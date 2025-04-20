@@ -25,6 +25,6 @@ namespace SchoolApp.Infrastructure.Context
         public DbSet<Teacher> Teachers{get; set;}
         public DbSet<TeacherSubject> TeacherSubjects{get; set;}
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlite("Data Source=C:/Users/Ismail/Desktop/Sqllite/Db/SchoolApp.db");
+        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlite("Data Source=C:/Users/Ismail/Desktop/Sqllite/Db/SchoolApp.db");
     }
 }

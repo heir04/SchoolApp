@@ -5,23 +5,23 @@ using SchoolApp.Core.Domain.Entities;
 
 namespace SchoolApp.Application.Services
 {
-    public class SessionService : ISessionService
+    public class SessionService(IUnitOfWork unitOfWork, ISessionRepository sessionRepository) : ISessionService
 {
-    public IUnitOfWork _unitOfWork;
-    public ISessionRepository _sessionRepository;
-    public SessionService(IUnitOfWork unitOfWork, ISessionRepository sessionRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _sessionRepository = sessionRepository;
-    }
+    public IUnitOfWork _unitOfWork = unitOfWork;
+    public ISessionRepository _sessionRepository = sessionRepository;
+    // public SessionService(IUnitOfWork unitOfWork, ISessionRepository sessionRepository)
+    // {
+    //     _unitOfWork = unitOfWork;
+    //     _sessionRepository = sessionRepository;
+    // }
     public async Task<BaseResponse<SessionDto>> Create(SessionDto sessionDto)
     {
         var response = new BaseResponse<SessionDto>();
 
-        var ifExist = await _unitOfWork.Session.Get(s => s.SessionName == sessionDto.SessionName);
-        if (ifExist != null)
+        var ifExist = await _unitOfWork.Session.ExistsAsync(s => s.CurrentSession == true);
+        if (ifExist)
         {
-            response.Message = "Session already exist";
+            response.Message = "A Session is still ongoing";
             return response;
         }
 
@@ -30,7 +30,8 @@ namespace SchoolApp.Application.Services
             SessionName = sessionDto.SessionName,
             StartDate = sessionDto.StartDate,
             EndDate = sessionDto.EndDate,
-            CurrentSession = true
+            CurrentSession = true,
+            CreatedOn = DateTime.Today
         };
 
        await _unitOfWork.Session.Register(session);
@@ -55,7 +56,8 @@ namespace SchoolApp.Application.Services
             response.Message = "Session already deleted";
             return response;
         }
-
+        
+        session.CurrentSession = false;
         session.IsDeleted = true;
         await _unitOfWork.Session.Update(session);
         response.Message = "Deleted Successfully";
@@ -99,7 +101,8 @@ namespace SchoolApp.Application.Services
             Id = s.Id,
             SessionName = s.SessionName,
             StartDate = s.StartDate,
-            EndDate = s.EndDate
+            EndDate = s.EndDate,
+            CurrentSession = s.CurrentSession
         }).ToList();
 
         response.Data = sessionDtos;

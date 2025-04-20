@@ -6,13 +6,13 @@ using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
-    public class UserService : IUserService
+    public class UserService(IUnitOfWork unitOfWork) : IUserService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public UserService(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        // public UserService(IUnitOfWork unitOfWork)
+        // {
+        //     _unitOfWork = unitOfWork;
+        // }
 
         public async Task<BaseResponse<UserDto>> Delete(Guid id)
         {
@@ -80,9 +80,17 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<UserDto>();
             var user = await _unitOfWork.User.GetUser(x => x.Email == userDto.Email.ToLower());
 
-            if (user is null)
+            // if (user is null || !BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
+            // {
+            //     response.Message = "Incorrect email or password!";
+            //     return response;
+            // }
+
+            string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
+
+            if (user is null || user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
             {
-                response.Message = "Invalid credentials";
+                response.Message = $"Incorrect email or password!";
                 return response;
             }
 
@@ -92,26 +100,11 @@ namespace SchoolApp.Application.Services
                 response.Message = "User has no roles assigned";
                 return response;
             }
-
-            if (userDto.Password == null)
-            {
-                response.Message = "Password cannot be null!";
-                return response;
-            }
-
-            string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
-
-            if (user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
-            {
-                response.Message = $"Incorrect email or password!";
-                return response;
-            }
             var role = await _unitOfWork.Role.Get(r => r.Id == userRole.RoleId);
             response.Data = new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                RoleId = userRole.RoleId,
                 RoleName = role.Name
             };
             response.Message = "Welcome";

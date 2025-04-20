@@ -2,17 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SessionController : ControllerBase
+    public class SessionController(ISessionService sessionService) : ControllerBase
     {
-        private readonly ISessionService _sessionService;
-        public SessionController(ISessionService sessionService) 
-        {
-            _sessionService = sessionService;
-        }
+        private readonly ISessionService _sessionService = sessionService;
+        // public SessionController(ISessionService sessionService) 
+        // {
+        //     _sessionService = sessionService;
+        // }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] SessionDto sessionDto)

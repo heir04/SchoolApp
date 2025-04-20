@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     // [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
-    public class RoleController : ControllerBase
+    public class RoleController(IRoleService roleService) : ControllerBase
     {
-        private readonly IRoleService _roleService;
-        public RoleController(IRoleService roleService) 
-        {
-            _roleService = roleService;
-        }
+        private readonly IRoleService _roleService = roleService;
+        // public RoleController(IRoleService roleService) 
+        // {
+        //     _roleService = roleService;
+        // }
 
         [HttpPost("Create")]
         public async Task<IActionResult> Create(RoleDto roleDto)

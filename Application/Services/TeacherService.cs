@@ -8,17 +8,17 @@ using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
 {
-    public class TeacherService : ITeacherService
+    public class TeacherService(IUnitOfWork unitOfWork, ApplicationContext context) : ITeacherService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ApplicationContext _context;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly ApplicationContext _context = context;
 
 
-        public TeacherService(IUnitOfWork unitOfWork, ApplicationContext context)
-        {
-            _unitOfWork = unitOfWork;
-            _context = context;
-        }
+        // public TeacherService(IUnitOfWork unitOfWork, ApplicationContext context)
+        // {
+        //     _unitOfWork = unitOfWork;
+        //     _context = context;
+        // }
         public async Task<BaseResponse<TeacherDto>> Register(TeacherDto teacherDto)
         {
             var response = new BaseResponse<TeacherDto>();
@@ -26,8 +26,8 @@ namespace SchoolApp.Application.Services
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
 
-            var emailExist = await _unitOfWork.Teacher.Get(t => t.Email == teacherDto.Email);
-            if (emailExist is not null)
+            var emailExist = await _unitOfWork.Teacher.ExistsAsync(t => t.Email == teacherDto.Email);
+            if (emailExist)
             {
                 response.Message = "Email already in use";
                 return response;
@@ -38,9 +38,9 @@ namespace SchoolApp.Application.Services
                 UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
                 HashSalt = saltString,
                 PasswordHash = hashedPassword,
+                // PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
                 Email = teacherDto.Email?.ToLower()
             };
-            await _unitOfWork.User.Register(user);
 
             var role = await _unitOfWork.Role.Get(r => r.Name == "Teacher");
             if (role is null)
@@ -51,10 +51,13 @@ namespace SchoolApp.Application.Services
 
             var userRole = new UserRole
             {
+                User = user,
                 UserId = user.Id,
+                Role = role,
                 RoleId = role.Id
             };
            _context.UserRoles.Add(userRole);
+           user.UserRoles.Add(userRole);
             
             var teacher = new Teacher
             { 
@@ -62,8 +65,8 @@ namespace SchoolApp.Application.Services
                 LastName = teacherDto.LastName,
                 Email = teacherDto.Email?.ToLower(),
                 UserId = user.Id,
-                User = user
-            
+                User = user,
+                CreatedOn = DateTime.Today
             };
             
            var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
@@ -76,7 +79,8 @@ namespace SchoolApp.Application.Services
                     TeacherId = teacherDto.Id,
                     SubjectId = subject.Id,
                     Teacher = teacher,
-                    Subject = subject
+                    Subject = subject,
+                    CreatedOn = DateTime.Today
                 };
                 teacherSubjects.Add(teacherSubject);
            }
@@ -84,6 +88,7 @@ namespace SchoolApp.Application.Services
            teacher.TeacherSubjects = teacherSubjects;
             
             await _unitOfWork.Teacher.Register(teacher);
+            await _unitOfWork.User.Register(user);
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Created successfully";
             response.Status = true;

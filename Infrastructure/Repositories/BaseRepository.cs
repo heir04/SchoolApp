@@ -13,7 +13,7 @@ namespace SchoolApp.Infrastructure.Repositories
         public async Task<T> Register(T entity)
         {
             await _context.Set<T>().AddAsync(entity) ;
-            await _context.SaveChangesAsync();
+            // await _context.SaveChangesAsync();
             return entity;
         }
 

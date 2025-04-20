@@ -24,14 +24,14 @@ namespace SchoolApp.Application.Services
             }
 
             var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId);
-            var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
+            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
             var subject = teacher.TeacherSubjects.SingleOrDefault();
             var student = await _unitOfWork.Student.GetAsync(studentId);
             var checkResult = await _unitOfWork.Result
-                .ExistsAsync(r => r.SessionId == selectSession.Id && r.StudentId == studentId && 
+                .ExistsAsync(r => r.SessionId == session.Id && r.StudentId == studentId && 
                                   r.LevelId == student.LevelId);
             
-            if (selectSession == null)
+            if (session == null)
             {
                 response.Message = "No session is currently set on system. Please try again later";
                 return response;
@@ -47,12 +47,13 @@ namespace SchoolApp.Application.Services
             {
                 StudentId = studentId,
                 Student = student,
-                SessionId = selectSession.Id, 
-                Session = selectSession,
+                SessionId = session.Id, 
+                Session = session,
                 LevelId = student.LevelId,
                 Level = student.Level,
                 Terms = resultDto.Terms,
-                Remark = resultDto.Remark
+                Remark = resultDto.Remark,
+                CreatedOn = DateTime.Today
             };
 
             var subjectScore = new SubjectScore
@@ -62,6 +63,7 @@ namespace SchoolApp.Application.Services
                 ContinuousAssessment = resultDto.ContinuousAssessment,
                 ExamScore = resultDto.ExamScore,
                 TotalScore = resultDto.ContinuousAssessment + resultDto.ExamScore,
+                CreatedOn = DateTime.Today
             };
             result.SubjectScores.Add(subjectScore);
             
@@ -157,7 +159,7 @@ namespace SchoolApp.Application.Services
                     SubjectName = s.Subject?.Name,
                     ContinuousAssessment = s.ContinuousAssessment,
                     ExamScore = s.ExamScore,
-                    TotalScore = s.ContinuousAssessment + s.ExamScore
+                    TotalScore = s.TotalScore
                 }).ToList()
                 
             };

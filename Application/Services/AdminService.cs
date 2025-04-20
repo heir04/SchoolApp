@@ -8,19 +8,20 @@ using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
 {
-    public class AdminService : IAdminService
+    public class AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IUnitOfWork unitOfWork) : IAdminService
     {
-        private readonly ApplicationContext _context;
-        private readonly IAdminRepository _adminRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
-        public AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IRoleRepository roleRepository) 
-        {
-            _context = context; 
-            _adminRepository = adminRepository;
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
-        }
+        private readonly ApplicationContext _context = context;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IAdminRepository _adminRepository = adminRepository;
+        private readonly IUserRepository _userRepository = userRepository;
+
+        // public AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IRoleRepository roleRepository) 
+        // {
+        //     _context = context; 
+        //     _adminRepository = adminRepository;
+        //     _userRepository = userRepository;
+        //     _roleRepository = roleRepository;
+        // }
 
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
         {
@@ -114,12 +115,12 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Register(AdminDto adminDto)
         {
             var response = new BaseResponse<AdminDto>();
-            var getadmin = await _adminRepository.Get(a => a.Email == adminDto.Email.ToLower());
+            var getadmin = await _unitOfWork.Admin.ExistsAsync(a => a.Email == adminDto.Email.ToLower());
             var defaultPassword = $"{adminDto.FirstName}";
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
 
-            if (getadmin != null)
+            if (getadmin)
             {
                 response.Message = "Email already exist";
                 return response;
@@ -129,10 +130,11 @@ namespace SchoolApp.Application.Services
                 UserName = $"{adminDto.FirstName}{adminDto.LastName}",
                 HashSalt = saltString,
                 PasswordHash = hashedPassword,
-                Email = adminDto.Email.ToLower()
+                // PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
+                Email = adminDto.Email?.ToLower()
             };
             
-            var role = await _roleRepository.Get(r =>r.Name == "Admin");
+            var role = await _unitOfWork.Role.Get(r => r.Name == "Admin");
             if (role == null)
             {
                 response.Message = "Role not found";
@@ -141,34 +143,43 @@ namespace SchoolApp.Application.Services
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                RoleId = role.Id
+                User = user,
+                RoleId = role.Id,
+                Role = role,
+                CreatedOn = DateTime.Today
             };
             _context.UserRoles.Add(userRole);
+            user.UserRoles.Add(userRole);
+            
             var admin = new Admin
             {
                 FirstName = adminDto.FirstName,
                 LastName = adminDto.LastName,           
                 Email = adminDto.Email?.ToLower(),
-                UserId = user.Id
+                UserId = user.Id,
+                User = user,
+                CreatedOn = DateTime.Today
             };
-            await _userRepository.Register(user);
-            var addadmin = await _adminRepository.Register(admin);
-            await _adminRepository.SaveChangesAsync();
-            admin.CreatedBy = addadmin.Id;
-            admin.LastModifiedBy = addadmin.Id;
-            admin.IsDeleted = false;
 
-            var adminDTO = new AdminDto
-            {
-                Id = admin.Id,
-                Email = adminDto.Email,
-                Password = adminDto.Password,
-                FirstName = adminDto.FirstName,
-                LastName = adminDto.LastName,
-            };
+            // var addadmin = await _unitOfWork.Admin.Register(admin);
+            await _unitOfWork.Admin.Register(admin);
+            await _userRepository.Register(user);
+            await _unitOfWork.SaveChangesAsync();
+            // admin.CreatedBy = addadmin.Id;
+            // admin.LastModifiedBy = addadmin.Id;
+            // admin.IsDeleted = false;
+
+            // var adminDTO = new AdminDto
+            // {
+            //     Id = admin.Id,
+            //     Email = adminDto.Email,
+            //     Password = adminDto.Password,
+            //     FirstName = adminDto.FirstName,
+            //     LastName = adminDto.LastName,
+            // };
 
              
-            response.Data = adminDTO;
+            // response.Data = adminDTO;
             response.Message = "Admin registered succesfuly";
             response.Status = true;
             return response;

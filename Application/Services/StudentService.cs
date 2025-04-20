@@ -8,15 +8,15 @@ using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
 {
-    public class StudentService : IStudentService
+    public class StudentService(IUnitOfWork unitOfWork, ApplicationContext context) : IStudentService
     {
-        private readonly ApplicationContext _context;
-        private readonly IUnitOfWork _unitOfWork;
-        public StudentService(IUnitOfWork unitOfWork, ApplicationContext context)
-        {
-            _context = context;
-            _unitOfWork = unitOfWork;
-        }
+        private readonly ApplicationContext _context = context;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        // public StudentService(IUnitOfWork unitOfWork, ApplicationContext context)
+        // {
+        //     _context = context;
+        //     _unitOfWork = unitOfWork;
+        // }
 
         public async Task<BaseResponse<StudentDto>> Delete(Guid id)
         {
@@ -89,7 +89,7 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<IEnumerable<StudentDto>>();
             var students = await _unitOfWork.Student.GetAll();
-            if (students == null)
+            if (students == null || students.Count == 0)
             {
                 response.Message = "no getStudent in this level";
                 response.Status = false;
@@ -116,7 +116,7 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<IEnumerable<StudentDto>>();
             var students = await _unitOfWork.Student.GetByExpression(s => s.LevelId == levelId);
-            if (students == null)
+            if (students == null || students.Count == 0)
             {
                 response.Message = "no Student registered in this level";
                 response.Status = false;
@@ -167,15 +167,14 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Register(StudentDto studentDto)
         {
             var response = new BaseResponse<StudentDto>();
-            var getStudent = await _unitOfWork.Student.Get(s => s.Email == studentDto.Email);
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Email == studentDto.Email);
             var defaultPassword = $"{studentDto.FirstName}";
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
 
-            if (getStudent != null)
+            if (studentExist)
             {
-                
-                response.Message = "already exist";
+                response.Message = $"Student with email: {studentDto.Email} already exist";
                 response.Status = false;
             }
 
@@ -184,22 +183,23 @@ namespace SchoolApp.Application.Services
                 UserName = $"{studentDto.FirstName}{studentDto.LastName}",
                 HashSalt = saltString,
                 PasswordHash = hashedPassword,
-                Email = studentDto.Email
+                // PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
+                Email = studentDto.Email?.ToLower()
             };
-            await _unitOfWork.User.Register(user);
 
             var role = await _unitOfWork.Role.Get(r => r.Name == "Student");
             if (role == null)
             {
                 response.Message = "Role not found";
                 response.Status = false;
-
             }
 
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                RoleId = role.Id
+                User = user,
+                RoleId = role.Id,
+                Role = role
             };
             _context.UserRoles.Add(userRole);
             user.UserRoles.Add(userRole);
@@ -220,14 +220,17 @@ namespace SchoolApp.Application.Services
                 Email = studentDto.Email?.ToLower(),
                 LevelId = getlevel.Id,
                 Level = getlevel,
-                UserId = user.Id
+                UserId = user.Id,
+                User = user,
+                CreatedOn = DateTime.Today
             };
             var addStudent = await _unitOfWork.Student.Register(student);
+            await _unitOfWork.User.Register(user);
             await _unitOfWork.SaveChangesAsync();
-            student.CreatedBy = addStudent.Id;
-            student.LastModifiedBy = addStudent.Id;
-            student.IsDeleted = false;
-            await _unitOfWork.Student.Update(student);
+            // student.CreatedBy = addStudent.Id;
+            // student.LastModifiedBy = addStudent.Id;
+            // student.IsDeleted = false;
+            // await _unitOfWork.Student.Update(student);
         
 
             // var studentDTo = new StudentDto

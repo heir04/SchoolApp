@@ -5,13 +5,13 @@ using SchoolApp.Core.Domain.Entities;
 
 namespace SchoolApp.Application.Services
 {
-    public class SubjectService : ISubjectService
+    public class SubjectService(ISubjectRepository subjectRepository) : ISubjectService
     {
-        private readonly ISubjectRepository _subjectRepository;
-        public SubjectService(ISubjectRepository subjectRepository)
-        {
-           _subjectRepository = subjectRepository;
-        }
+        private readonly ISubjectRepository _subjectRepository = subjectRepository;
+        // public SubjectService(ISubjectRepository subjectRepository)
+        // {
+        //    _subjectRepository = subjectRepository;
+        // }
         public async Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto)
         {
             var response = new BaseResponse<SubjectDto>();
@@ -25,6 +25,7 @@ namespace SchoolApp.Application.Services
             var newsubject = new Subject
             {
                 Name = subjectDto.Name,
+                CreatedOn = DateTime.Today
             };
             await _subjectRepository.Register(newsubject);
             response.Message = "Success";

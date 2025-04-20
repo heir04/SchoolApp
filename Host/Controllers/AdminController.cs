@@ -2,17 +2,17 @@
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 
-namespace SchoolApp.Infrastructure.Presentation.Controllers
+namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AdminController : ControllerBase
+    public class AdminController(IAdminService adminService) : ControllerBase
     {
-        private readonly IAdminService _adminService;
-        public AdminController(IAdminService adminService)
-        {
-            _adminService = adminService;
-        }
+        private readonly IAdminService _adminService = adminService;
+        // public AdminController(IAdminService adminService)
+        // {
+        //     _adminService = adminService;
+        // }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] AdminDto adminDto)

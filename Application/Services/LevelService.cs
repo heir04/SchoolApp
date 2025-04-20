@@ -5,13 +5,13 @@ using SchoolApp.Core.Domain.Entities;
 
 namespace SchoolApp.Application.Services
 {
-    public class LevelService : ILevelService
+    public class LevelService(ILevelRepository levelRepository) : ILevelService
     {
-        private readonly ILevelRepository _levelRepository;
-        public LevelService(ILevelRepository levelRepository) 
-        {
-            _levelRepository = levelRepository;
-        }
+        private readonly ILevelRepository _levelRepository = levelRepository;
+        // public LevelService(ILevelRepository levelRepository) 
+        // {
+        //     _levelRepository = levelRepository;
+        // }
         public async Task<BaseResponse<LevelDto>> Create(LevelDto levelDto)
         {
             var response = new BaseResponse<LevelDto>();
@@ -25,6 +25,7 @@ namespace SchoolApp.Application.Services
             var level = new Level
             {
                 LevelName = levelDto.LevelName,
+                CreatedOn = DateTime.Today
                 //TeacherId = levelDto.LevelTeacherId,
                 //Teacher = levelDto.LevelTeacher
             };

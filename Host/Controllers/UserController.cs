@@ -1,36 +1,32 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
-using SchoolApp.Application.Services;
 using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Host.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUserService userService, JwtHelper jwtHelper) : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IUserService _userService = userService;
+        private readonly JwtHelper _jwtHelper = jwtHelper;
         
-        public UserController(IUserService userService)
-        {
-            _userService = userService;
-        }
+        // public UserController(IUserService userService)
+        // {
+        //     _userService = userService;
+        // }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody]UserDto userDto)
         {
             var response = await _userService.Login(userDto);
+            // return response.Status ? Ok(response) : BadRequest(response);
 
             if (response.Data != null)
             {
-                    var token = JwtHelper.GenerateToken(response.Data.Email, response.Data.RoleName, response.Data.Id);
-                    return Ok(new{
+                    var token = _jwtHelper.GenerateToken(response.Data.Email, response.Data.RoleName, response.Data.Id);
+                    return  Ok(new{
                     Token = token
                     });
             }
