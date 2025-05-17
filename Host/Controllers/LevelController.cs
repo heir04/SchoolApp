@@ -22,8 +22,8 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize]
         [HttpGet("GetAll")]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _levelService.GetAll();

@@ -5,17 +5,14 @@ using SchoolApp.Core.Domain.Entities;
 
 namespace SchoolApp.Application.Services
 {
-    public class SubjectService(ISubjectRepository subjectRepository) : ISubjectService
+    public class SubjectService(IUnitOfWork unitOfWork) : ISubjectService
     {
-        private readonly ISubjectRepository _subjectRepository = subjectRepository;
-        // public SubjectService(ISubjectRepository subjectRepository)
-        // {
-        //    _subjectRepository = subjectRepository;
-        // }
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+
         public async Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto)
         {
             var response = new BaseResponse<SubjectDto>();
-            var subject = await _subjectRepository.Get(s => s.Name == subjectDto.Name);
+            var subject = await _unitOfWork.Subject.Get(s => s.Name == subjectDto.Name);
             if (subject != null)
             {
                 response.Message = "Subject already exists";
@@ -27,7 +24,8 @@ namespace SchoolApp.Application.Services
                 Name = subjectDto.Name,
                 CreatedOn = DateTime.Today
             };
-            await _subjectRepository.Register(newsubject);
+            await _unitOfWork.Subject.Register(newsubject);
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
             return response;
@@ -36,7 +34,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Delete(Guid subjectId)
         {
             var response = new BaseResponse<SubjectDto>();
-            var subject = await _subjectRepository.Get(s => s.Id == subjectId);
+            var subject = await _unitOfWork.Subject.Get(s => s.Id == subjectId);
 
             if (subject is null)
             {
@@ -51,7 +49,7 @@ namespace SchoolApp.Application.Services
             }
 
             subject.IsDeleted = true;
-            await _subjectRepository.Update(subject);
+            await _unitOfWork.Subject.Update(subject);
             response.Message = "Deleted Successfully";
             response.Status = true;
             return response;
@@ -60,7 +58,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Get(Guid id)
         {
             var response = new BaseResponse<SubjectDto>();
-            var subject = await _subjectRepository.Get(s => s.Id == id);
+            var subject = await _unitOfWork.Subject.Get(s => s.Id == id);
 
             if (subject is null)
             {
@@ -82,7 +80,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<SubjectDto>>> GetAll()
         {
             var response = new BaseResponse<IEnumerable<SubjectDto>>();
-            var subjects = await _subjectRepository.GetAll();
+            var subjects = await _unitOfWork.Subject.GetAll();
 
             if (subjects is null)
             {
@@ -104,7 +102,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Update(SubjectDto subjectDto, Guid subjectId)
         {
             var response = new BaseResponse<SubjectDto>();
-            var subject = await _subjectRepository.Get(a => a.Id == subjectId);
+            var subject = await _unitOfWork.Subject.Get(a => a.Id == subjectId);
             if (subject is null)
             {
                 response.Message = "Subject not found";
@@ -112,7 +110,7 @@ namespace SchoolApp.Application.Services
             }
 
             subject.Name = subjectDto.Name;
-            await _subjectRepository.Update(subject);
+            await _unitOfWork.Subject.Update(subject);
             response.Message = "Success";
             response.Status = true;
             return response;

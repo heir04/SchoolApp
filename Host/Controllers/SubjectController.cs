@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
@@ -30,6 +31,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _subjectService.GetAll();

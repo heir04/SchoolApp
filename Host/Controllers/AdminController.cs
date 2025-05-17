@@ -9,11 +9,7 @@ namespace SchoolApp.Host.Controllers
     public class AdminController(IAdminService adminService) : ControllerBase
     {
         private readonly IAdminService _adminService = adminService;
-        // public AdminController(IAdminService adminService)
-        // {
-        //     _adminService = adminService;
-        // }
-
+    
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] AdminDto adminDto)
         {

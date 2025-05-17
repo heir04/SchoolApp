@@ -11,6 +11,7 @@ namespace SchoolApp.Application.Models.Dto
         // public string? StudentId { get; set; }
         // public int UserId { get; set; }
         public List<Guid>? SubjectIds { get; set; }
+        public ICollection<string> Subjects { get; set; } = new HashSet<string>();
         //public IList<TeacherSubject>? TeacherSubjects { get; set; }
         public string? Password { get; set; }
     }

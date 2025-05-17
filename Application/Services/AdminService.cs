@@ -15,14 +15,6 @@ namespace SchoolApp.Application.Services
         private readonly IAdminRepository _adminRepository = adminRepository;
         private readonly IUserRepository _userRepository = userRepository;
 
-        // public AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IRoleRepository roleRepository) 
-        // {
-        //     _context = context; 
-        //     _adminRepository = adminRepository;
-        //     _userRepository = userRepository;
-        //     _roleRepository = roleRepository;
-        // }
-
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
         {
             var response = new BaseResponse<AdminDto>();

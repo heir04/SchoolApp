@@ -17,7 +17,7 @@ namespace schoolapp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -367,7 +367,7 @@ namespace schoolapp.Migrations
                     b.Property<DateTime?>("LastModifiedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("ResultId")
+                    b.Property<Guid>("ResultId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SubjectId")
@@ -673,15 +673,19 @@ namespace schoolapp.Migrations
 
             modelBuilder.Entity("SchoolApp.Core.Domain.Entities.SubjectScore", b =>
                 {
-                    b.HasOne("SchoolApp.Core.Domain.Entities.Result", null)
+                    b.HasOne("SchoolApp.Core.Domain.Entities.Result", "Result")
                         .WithMany("SubjectScores")
-                        .HasForeignKey("ResultId");
+                        .HasForeignKey("ResultId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SchoolApp.Core.Domain.Entities.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Result");
 
                     b.Navigation("Subject");
                 });

@@ -9,11 +9,7 @@ namespace SchoolApp.Application.Services
 {
     public IUnitOfWork _unitOfWork = unitOfWork;
     public ISessionRepository _sessionRepository = sessionRepository;
-    // public SessionService(IUnitOfWork unitOfWork, ISessionRepository sessionRepository)
-    // {
-    //     _unitOfWork = unitOfWork;
-    //     _sessionRepository = sessionRepository;
-    // }
+   
     public async Task<BaseResponse<SessionDto>> Create(SessionDto sessionDto)
     {
         var response = new BaseResponse<SessionDto>();
@@ -35,6 +31,7 @@ namespace SchoolApp.Application.Services
         };
 
        await _unitOfWork.Session.Register(session);
+       await _unitOfWork.SaveChangesAsync();
        response.Message = "Success";
        response.Status = true;
        return response;

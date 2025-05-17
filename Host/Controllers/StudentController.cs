@@ -43,7 +43,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Teacher")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {

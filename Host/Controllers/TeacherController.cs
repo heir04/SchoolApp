@@ -6,14 +6,10 @@ namespace SchoolApp.Host.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TeacherController : ControllerBase
+    public class TeacherController(ITeacherService teacherService) : ControllerBase
     {
-        private readonly ITeacherService _teacherService;
-        public TeacherController(ITeacherService teacherService)
-        {
-            _teacherService = teacherService;
-        }
-
+        private readonly ITeacherService _teacherService = teacherService;
+        
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] TeacherDto teacherDto)
         {

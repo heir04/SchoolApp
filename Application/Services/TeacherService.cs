@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
@@ -13,12 +14,6 @@ namespace SchoolApp.Application.Services
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly ApplicationContext _context = context;
 
-
-        // public TeacherService(IUnitOfWork unitOfWork, ApplicationContext context)
-        // {
-        //     _unitOfWork = unitOfWork;
-        //     _context = context;
-        // }
         public async Task<BaseResponse<TeacherDto>> Register(TeacherDto teacherDto)
         {
             var response = new BaseResponse<TeacherDto>();
@@ -146,19 +141,20 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<TeacherDto>>> GetAll()
         {
             var response = new BaseResponse<IEnumerable<TeacherDto>>();
-            var teachers = await _unitOfWork.Teacher.GetAll();
+            var teachers = await _unitOfWork.Teacher.GetAllTeachers();
             if (teachers == null || teachers.Count == 0)
             {
                 response.Message = "No teachers found";
                 return response;
             }
-
+            
             var teacherDto = teachers.Select(t => new TeacherDto
             {
                 Id = t.Id,
                 FirstName = t.FirstName,
                 LastName = t.LastName,
                 Email = t.Email,
+                Subjects = t.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             }).ToList();
             
             response.Message = "Success";

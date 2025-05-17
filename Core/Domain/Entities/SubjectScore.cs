@@ -6,6 +6,8 @@ namespace SchoolApp.Core.Domain.Entities
     {
         public Guid SubjectId { get; set; }
         public Subject? Subject { get; set; }
+        public Guid ResultId { get; set; }
+        public Result? Result { get; set; }
         public double ContinuousAssessment{ get; set; }
         public double ExamScore{ get; set; }
         public double TotalScore { get; set; }

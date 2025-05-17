@@ -33,6 +33,7 @@ namespace SchoolApp.Infrastructure.Repositories
                 .Include(r => r.Level)
                 .Include(r => r.Session)
                 .Include(r => r.SubjectScores)
+                .ThenInclude(ss => ss.Subject)
                 .FirstOrDefaultAsync(expression);
 
                 return await result;

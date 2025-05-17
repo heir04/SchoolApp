@@ -9,10 +9,6 @@ namespace SchoolApp.Application.Services
     public class UserService(IUnitOfWork unitOfWork) : IUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        // public UserService(IUnitOfWork unitOfWork)
-        // {
-        //     _unitOfWork = unitOfWork;
-        // }
 
         public async Task<BaseResponse<UserDto>> Delete(Guid id)
         {

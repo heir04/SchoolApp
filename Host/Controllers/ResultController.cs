@@ -10,16 +10,20 @@ namespace SchoolApp.Host.Controllers
     public class ResultController(IResultService resultService) : ControllerBase
     {
         private readonly IResultService _resultService = resultService;
-        // public ResultController(IResultService resultService)
-        // {
-        //    _resultService = resultService;
-        // }
         
-        [Authorize(Roles = "Teacher")]
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromForm] ResultDto resultDto, Guid studentId)
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> Create([FromForm] ResultDto resultDto, Guid studentId)
         {
             var result = await _resultService.Create(resultDto, studentId);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("CreateResults")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> CreateResults([FromForm] ResultDto resultDto, Guid levelId)
+        {
+            var result = await _resultService.CreateResultsForLevel(resultDto, levelId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
@@ -30,8 +34,8 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
-        // [Authorize(Roles = "Student")]
-        [HttpGet("Get")] 
+        [HttpGet("CheckResult")]
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> CheckResult()
         {
             var result = await _resultService.CheckResult();
@@ -39,9 +43,9 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllResult([FromRoute]Guid id)
+        public async Task<IActionResult> GetAllResult([FromRoute]Guid subjectId)
         {
-            var result = await _resultService.GetAllResult(id);
+            var result = await _resultService.GetAllResult(subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
