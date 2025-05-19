@@ -14,8 +14,8 @@ namespace SchoolApp.Application.Services
     {
         var response = new BaseResponse<SessionDto>();
 
-        var ifExist = await _unitOfWork.Session.ExistsAsync(s => s.CurrentSession == true);
-        if (ifExist)
+        var sessionExist = await _unitOfWork.Session.ExistsAsync(s => s.CurrentSession == true);
+        if (sessionExist)
         {
             response.Message = "A Session is still ongoing";
             return response;
@@ -40,17 +40,12 @@ namespace SchoolApp.Application.Services
     public async Task<BaseResponse<SessionDto>> Delete(Guid sessionId)
     {
         var response = new BaseResponse<SessionDto>();
+        var sessionExist = await _unitOfWork.Session.ExistsAsync(s => s.Id == sessionId && s.IsDeleted == false);
         var session = await _unitOfWork.Session.Get(t => t.Id == sessionId);
 
         if (session is null)
         {
             response.Message = "Session not found";
-            return response;
-        }
-
-        if (session.IsDeleted == true)
-        {
-            response.Message = "Session already deleted";
             return response;
         }
         
@@ -65,6 +60,13 @@ namespace SchoolApp.Application.Services
     public async Task<BaseResponse<SessionDto>> Get(Guid id)
     {
         var response = new BaseResponse<SessionDto>();
+        var sessionExist = await _unitOfWork.Session.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
+        if (!sessionExist)
+        {
+            response.Message = "session not found";
+            return response;
+        }
+
         var session = await _sessionRepository.Get(s => s.Id == id);
         if (session is null)
         {
@@ -83,18 +85,21 @@ namespace SchoolApp.Application.Services
         response.Status = true;
         return response;
     }
+
     public async Task<BaseResponse<IEnumerable<SessionDto>>> GetAll()
     {
         var response = new BaseResponse<IEnumerable<SessionDto>>();
         var sessions = await _unitOfWork.Session.GetAll();
 
-        if (sessions is null)
+        if (sessions is null || sessions.Count() == 0)
         {
             response.Message = "No session registered";
             return response;
         }
 
-        var sessionDtos = sessions.Select(s => new SessionDto{
+        var sessionDtos = sessions
+        .Where(s => s.IsDeleted == false)
+        .Select(s => new SessionDto{
             Id = s.Id,
             SessionName = s.SessionName,
             StartDate = s.StartDate,
@@ -111,6 +116,13 @@ namespace SchoolApp.Application.Services
     public async Task<BaseResponse<SessionDto>> Update(SessionDto sessionDto, Guid sessionId)
     {
         var response = new BaseResponse<SessionDto>();
+        var sessionExist = await _unitOfWork.Session.ExistsAsync(s => s.Id == sessionId && s.IsDeleted == false);
+        if (!sessionExist)
+        {
+            response.Message = "session not found";
+            return response;
+        }
+        
         var session = await _unitOfWork.Session.Get(l => l.Id == sessionId);
         if (session is null)
         {

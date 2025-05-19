@@ -270,7 +270,7 @@ namespace SchoolApp.Application.Services
             var resultExist = await _unitOfWork.Result.ExistsAsync(r => r.Id == resultId);
             var result = await _unitOfWork.Result.Get(r => r.Id == resultId);
 
-            if (!resultExist)
+            if (!resultExist || result.IsDeleted == true)
             {
                 response.Message = "result not found";
                 return response;

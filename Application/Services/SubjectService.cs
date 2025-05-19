@@ -12,8 +12,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto)
         {
             var response = new BaseResponse<SubjectDto>();
-            var subject = await _unitOfWork.Subject.Get(s => s.Name == subjectDto.Name);
-            if (subject != null)
+            var subject = await _unitOfWork.Subject.ExistsAsync(s => s.Name == subjectDto.Name && s.IsDeleted == false);
+            if (subject)
             {
                 response.Message = "Subject already exists";
                 return response;
@@ -34,6 +34,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Delete(Guid subjectId)
         {
             var response = new BaseResponse<SubjectDto>();
+            var subjectExist = await _unitOfWork.Subject.ExistsAsync(s => s.Id == subjectId && s.IsDeleted == false);
+            if (!subjectExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var subject = await _unitOfWork.Subject.Get(s => s.Id == subjectId);
 
             if (subject is null)
@@ -58,6 +65,12 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Get(Guid id)
         {
             var response = new BaseResponse<SubjectDto>();
+            var subjectExist = await _unitOfWork.Subject.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
+            if (!subjectExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
             var subject = await _unitOfWork.Subject.Get(s => s.Id == id);
 
             if (subject is null)
@@ -88,7 +101,9 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var subjectDtos = subjects.Select(s => new SubjectDto{
+            var subjectDtos = subjects
+            .Where(s => s.IsDeleted == false)
+            .Select(s => new SubjectDto{
                 Id = s.Id,
                 Name = s.Name
             }).ToList();
@@ -102,6 +117,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<SubjectDto>> Update(SubjectDto subjectDto, Guid subjectId)
         {
             var response = new BaseResponse<SubjectDto>();
+            var subjectExist = await _unitOfWork.Subject.ExistsAsync(s => s.Id == subjectId && s.IsDeleted == false);
+            if (!subjectExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var subject = await _unitOfWork.Subject.Get(a => a.Id == subjectId);
             if (subject is null)
             {

@@ -93,8 +93,14 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Get(Guid id)
         {
             var response = new BaseResponse<TeacherDto>();
-            var teacher = await _unitOfWork.Teacher.Get(t => t.Id == id);
+            var teacherExist = await _unitOfWork.Teacher.ExistsAsync(t => t.Id == id && t.IsDeleted == false);
+            if (!teacherExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
 
+            var teacher = await _unitOfWork.Teacher.Get(t => t.Id == id);
             if (teacher == null)
             {
                 response.Message = "Teacher not found";
@@ -117,6 +123,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Get(string email)
         {
             var response = new BaseResponse<TeacherDto>();
+            var teacherExist = await _unitOfWork.Teacher.ExistsAsync(t => t.Email == email && t.IsDeleted == false);
+            if (!teacherExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var teacher = await _unitOfWork.Teacher.Get(t => t.Email == email);
 
             if (teacher == null)
@@ -148,7 +161,9 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             
-            var teacherDto = teachers.Select(t => new TeacherDto
+            var teacherDto = teachers
+            .Where(t => t.IsDeleted == false)
+            .Select(t => new TeacherDto
             {
                 Id = t.Id,
                 FirstName = t.FirstName,
@@ -166,6 +181,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Update(TeacherDto teacherDto, Guid id)
         {
             var response = new BaseResponse<TeacherDto>();
+            var teacherExist = await _unitOfWork.Teacher.ExistsAsync(t => t.Id == id && t.IsDeleted == false);
+            if (!teacherExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var teacher = await _unitOfWork.Teacher.Get(t => t.Id == id);
             if (teacher is null)
             {
@@ -185,17 +207,18 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<TeacherDto>> Delete(Guid id)
         {
             var response = new BaseResponse<TeacherDto>();
+            var teacherExist = await _unitOfWork.Teacher.ExistsAsync(t => t.Id == id && t.IsDeleted == false);
+            if (!teacherExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var teacher = await _unitOfWork.Teacher.Get(t => t.Id == id);
 
             if (teacher is null)
             {
                 response.Message = "Teacher not found";
-                return response;
-            }
-
-            if (teacher.IsDeleted == true)
-            {
-                response.Message = "Subject already deleted";
                 return response;
             }
 

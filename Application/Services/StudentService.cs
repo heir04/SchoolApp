@@ -17,8 +17,14 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Delete(Guid id)
         {
             var response = new BaseResponse<StudentDto>();
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
             var student = await _unitOfWork.Student.Get(a => a.Id == id);
-            if (student == null || student.IsDeleted == true)
+            if (student == null)
             {
                 
                 response.Message = "not found or is already deleted";
@@ -35,6 +41,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Get(Guid id)
         {
             var response =  new BaseResponse<StudentDto>();
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
             var student = await _unitOfWork.Student.GetStudent(s => s.Id == id);
             if (student == null)
             {
@@ -60,13 +73,21 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Get(string email)
         {
             var response = new BaseResponse<StudentDto>();
-            var student = await _unitOfWork.Student.GetStudent(s =>s.Email == email);
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Email == email && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
+            var student = await _unitOfWork.Student.GetStudent(s =>s.Email == email && !s.IsDeleted);
             if (student == null)
             {
                 response.Message = "not found";
                 response.Status = false;
                 return response;
             }
+            
             var studentDto = new StudentDto
             {
                 Id = student.Id,
@@ -93,7 +114,9 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var studentDtos = students.Select(s => new StudentDto
+            var studentDtos = students
+            .Where(s => s.IsDeleted == false)
+            .Select(s => new StudentDto
             {
                 Id = s.Id,
                 FirstName = s.FirstName,
@@ -121,7 +144,9 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var studentDtos = students.Select(s => new StudentDto
+            var studentDtos = students
+            .Where(s => s.IsDeleted == false)
+            .Select(s => new StudentDto
             {
                 Id = s.Id,
                 FirstName = s.FirstName,
@@ -141,6 +166,13 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> GetByStudentId(string studentId)
         {
             var response = new BaseResponse<StudentDto>();
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.StudentId == studentId && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+            
             var student = await _unitOfWork.Student.Get(s => s.StudentId == studentId);
             if (student == null)
             {
@@ -265,6 +297,12 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Update(StudentDto studentDto, Guid id)
         {
             var response = new BaseResponse<StudentDto>();
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
             var student = await _unitOfWork.Student.Get(s => s.Id == id);
             if (student == null)
             {

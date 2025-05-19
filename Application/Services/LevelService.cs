@@ -12,8 +12,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<LevelDto>> Create(LevelDto levelDto)
         {
             var response = new BaseResponse<LevelDto>();
-            var getLevel = await _unitOfWork.Level.Get(l => l.LevelName == levelDto.LevelName);
-            if (getLevel != null)
+            var getLevel = await _unitOfWork.Level.ExistsAsync(l => l.LevelName == levelDto.LevelName && l.IsDeleted == false);
+            if (getLevel)
             {
                 response.Message = "already exist";   
                 return response;
@@ -43,17 +43,17 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<LevelDto>> Delete(Guid levelId)
         {
             var response = new BaseResponse<LevelDto>();
-            var level = await _unitOfWork.Level.Get(l => l.Id == levelId);
-
-            if (level is null)
+            var levelExist = await _unitOfWork.Level.ExistsAsync(l => l.Id == levelId && l.IsDeleted == false);
+            if (!levelExist)
             {
                 response.Message = "Not found";
                 return response;
             }
+            var level = await _unitOfWork.Level.Get(l => l.Id == levelId);
 
-            if (level.IsDeleted == true)
+            if (level is null )
             {
-                response.Message = "level already deleted";
+                response.Message = "Not found";
                 return response;
             }
 
@@ -69,13 +69,19 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<IEnumerable<LevelDto>>();
             var levels = await _unitOfWork.Level.GetAll();
 
-            if (levels is null)
+            if (levels is null || levels.Count() == 0)
+            {
+                response.Message = "No level found";
+                return response;
+            }
             {
                 response.Message = "No level found";
                 return response;
             }
 
-            var levelDtos = levels.Select(l => new LevelDto{
+            var levelDtos = levels
+            .Where(l => l.IsDeleted == false)
+            .Select(l => new LevelDto{
                 Id = l.Id,
                 LevelName = l.LevelName
             }).ToList();
@@ -89,6 +95,12 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<LevelDto>> Update(LevelDto levelDto, Guid levelId)
         {
             var response = new BaseResponse<LevelDto>();
+            var levelExist = await _unitOfWork.Level.ExistsAsync(l => l.Id == levelId && l.IsDeleted == false);
+            if (!levelExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
             var level = await _unitOfWork.Level.Get(l => l.Id == levelId);
             if (level is null)
             {

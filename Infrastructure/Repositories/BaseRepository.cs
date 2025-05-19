@@ -13,7 +13,6 @@ namespace SchoolApp.Infrastructure.Repositories
         public async Task<T> Register(T entity)
         {
             await _context.Set<T>().AddAsync(entity) ;
-            // await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -28,10 +27,6 @@ namespace SchoolApp.Infrastructure.Repositories
         {
             return await _context.Set<T>().FindAsync(id);
         }
-        // public T Get(Guid id)
-        // {
-        //     return _context.Set<T>().Find(id);
-        // }
 
         public async Task<T> Get(Expression<Func<T, bool>> expression)
         {

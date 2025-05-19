@@ -8,16 +8,12 @@ namespace SchoolApp.Application.Services
     public class RoleService(IRoleRepository roleRepository) : IRoleService
     {
         private readonly IRoleRepository _roleRepository = roleRepository;
-        // public RoleService(IRoleRepository roleRepository) 
-        // {
-        //     _roleRepository = roleRepository;
-        // }
 
         public async Task<BaseResponse<RoleDto>> CreateRole(RoleDto roleDto)
         {
             var response = new BaseResponse<RoleDto>();
-            var role = await _roleRepository.Get(r => r.Name == roleDto.Name);
-            if (role != null)
+            var role = await _roleRepository.ExistsAsync(r => r.Name == roleDto.Name);
+            if (role)
             {
                 response.Message = "Role already exists";
                 return response;

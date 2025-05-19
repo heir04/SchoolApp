@@ -18,15 +18,16 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
         {
             var response = new BaseResponse<AdminDto>();
-            var admin = await _adminRepository.Get(a => a.Id == id);
-            if (admin == null)
+            var adminExist = await _unitOfWork.Admin.ExistsAsync(a => a.Id == id && a.IsDeleted == false);
+            if (!adminExist)
             {
                 response.Message = "Admin not found";
                 return response;
             }
-            if (admin.IsDeleted == true)
+            var admin = await _adminRepository.Get(a => a.Id == id);
+            if (admin == null)
             {
-                response.Message = "Admin already Deleted";
+                response.Message = "Admin not found";
                 return response;
             }
             admin.IsDeleted = true;
@@ -39,12 +40,20 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Get(Guid id)
         {
             var response = new BaseResponse<AdminDto>();
-            var admin = await _adminRepository.Get(a => a.Id == id);
-            if(admin == null)
+            var adminExist = await _unitOfWork.Admin.ExistsAsync(a => a.Id == id && a.IsDeleted == false);
+            if (!adminExist)
             {
                 response.Message = "admin not found";
                 return response;
             }
+
+            var admin = await _adminRepository.Get(a => a.Id == id);
+            if(admin == null )
+            {
+                response.Message = "admin not found";
+                return response;
+            }
+            
             var adminDto = new AdminDto
             {
                 Id = admin.Id,
@@ -61,6 +70,12 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Get(string email)
         {
             var response = new BaseResponse<AdminDto>();
+            var adminExist = await _unitOfWork.Admin.ExistsAsync(a => a.Email == email && a.IsDeleted == false);
+            if (!adminExist)
+            {
+                response.Message = "admin not found";
+                return response;
+            }
             var admin = await _adminRepository.Get(a => a.Email == email);
             if (admin == null)
             {
@@ -90,7 +105,9 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var adminDtos = admins.Select(a => new AdminDto
+            var adminDtos = admins
+            .Where(a => a.IsDeleted == false)
+            .Select(a => new AdminDto
             {
                 Id = a.Id,
                 FirstName = a.FirstName,
@@ -180,13 +197,14 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<AdminDto>> Update(Guid id, AdminDto adminDto)
         {
             var response = new BaseResponse<AdminDto>();
-            var admin = await _adminRepository.Get(a => a.Id == id);
+            
             var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id);
             if (!adminExist)
             {
                response.Message = "admin found";
                return response;
             }
+            var admin = await _adminRepository.Get(a => a.Id == id);
             
             var getUser = await _userRepository.Get(u => u.Email == adminDto.Email);
             if (getUser == null)
