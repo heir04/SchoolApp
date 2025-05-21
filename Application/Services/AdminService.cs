@@ -31,6 +31,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             admin.IsDeleted = true;
+            await _unitOfWork.Admin.Update(admin);
         
             response.Message = "Admin Deleted";
             response.Status = true;
@@ -198,22 +199,19 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<AdminDto>();
             
-            var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id);
+            var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id && a.IsDeleted == false);
             if (!adminExist)
             {
-               response.Message = "admin found";
+               response.Message = "admin not found";
                return response;
             }
             var admin = await _adminRepository.Get(a => a.Id == id);
             
-            var getUser = await _userRepository.Get(u => u.Email == adminDto.Email);
+            var getUser = await _userRepository.Get(u => u.Email == admin.Email);
             if (getUser == null)
             {
-                return new BaseResponse<AdminDto>
-                {
-                    Message = "User not found",
-                    Status = false
-                };
+                response.Message = "User not found";
+                return response;
             }
             getUser.Email = adminDto.Email;
             await _userRepository.Update(getUser);

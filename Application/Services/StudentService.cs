@@ -32,6 +32,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             student.IsDeleted = true;
+            await _unitOfWork.Student.Update(student);
 
             response.Message = "Student deleted";
             response.Status = true;
@@ -310,7 +311,7 @@ namespace SchoolApp.Application.Services
                 response.Status = false;
             }
 
-            var getUser = await _unitOfWork.User.Get(u => u.Email == studentDto.Email);
+            var getUser = await _unitOfWork.User.Get(u => u.Email == student.Email);
             if (getUser == null)
             {
                 response.Message = "User not found";
@@ -324,7 +325,6 @@ namespace SchoolApp.Application.Services
             student.LastName = studentDto.LastName ?? student.LastName;
             //student.LevelId = studentDto.LevelId;
             await _unitOfWork.Student.Update(student);
-            await _unitOfWork.SaveChangesAsync();
 
             response.Message = "updated succesfully";
             response.Status = true;

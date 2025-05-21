@@ -74,10 +74,6 @@ namespace SchoolApp.Application.Services
                 response.Message = "No level found";
                 return response;
             }
-            {
-                response.Message = "No level found";
-                return response;
-            }
 
             var levelDtos = levels
             .Where(l => l.IsDeleted == false)
