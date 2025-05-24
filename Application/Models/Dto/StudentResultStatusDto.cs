@@ -8,6 +8,7 @@ namespace SchoolApp.Application.Models.Dto
     public class StudentResultStatusDto
     {
         public string? StudentName { get; set; }
+        public string? Message { get; set; }
         public string? Status { get; set; }
     }
 }

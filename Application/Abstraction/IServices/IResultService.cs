@@ -5,7 +5,7 @@ namespace SchoolApp.Application.Abstraction.IServices
     public interface IResultService
     {
         Task<BaseResponse<ResultDto>> Create(ResultDto resultDto, Guid studentId);
-        Task<BaseResponse<IEnumerable<StudentResultStatusDto>>> CreateResultsForLevel(ResultDto resultDto, Guid levelId);
+        Task<BaseResponse<IEnumerable<StudentResultStatusDto>>> CreateBulkResults(ResultDto resultDto);
         Task<BaseResponse<ResultDto>> Update(ResultDto resultDto, Guid resultId, Guid subjectId);
         Task<BaseResponse<ResultDto>> Get(Guid id);
         Task<BaseResponse<ResultDto>> Delete(Guid resultId);

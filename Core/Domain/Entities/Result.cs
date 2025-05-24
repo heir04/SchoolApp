@@ -16,6 +16,6 @@ namespace SchoolApp.Core.Domain.Entities
         s.TotalScore);
         // public string Grade{ get; set; }
         public string? Remark {get;set;}
-        public ICollection<SubjectScore> SubjectScores { get; set; } = new HashSet<SubjectScore>();
+         public ICollection<SubjectScore> SubjectScores { get; set; } = new HashSet<SubjectScore>();
     }
 }
