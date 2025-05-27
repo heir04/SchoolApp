@@ -61,13 +61,18 @@ namespace SchoolApp.Application.Services
         var sessionExist = await _unitOfWork.Session.ExistsAsync(s => s.Id == sessionId && s.IsDeleted == false);
         var session = await _unitOfWork.Session.Get(t => t.Id == sessionId);
 
-        if (session is null)
+        if (!sessionExist)
         {
             response.Message = "Session not found";
             return response;
         }
-        
-        session.CurrentSession = false;
+
+        if(session.CurrentSession == true)
+        {
+            response.Message = "Cannot delete an ongoing session. End session before deleting.";
+            return response;
+        }
+
         session.IsDeleted = true;
         await _unitOfWork.Session.Update(session);
         response.Message = "Deleted Successfully";
