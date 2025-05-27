@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
+    [Authorize(Roles ="Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class SubjectController : ControllerBase

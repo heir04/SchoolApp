@@ -9,10 +9,6 @@ namespace SchoolApp.Host.Controllers
     public class SessionController(ISessionService sessionService) : ControllerBase
     {
         private readonly ISessionService _sessionService = sessionService;
-        // public SessionController(ISessionService sessionService) 
-        // {
-        //     _sessionService = sessionService;
-        // }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] SessionDto sessionDto)

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Host.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController(IAdminService adminService) : ControllerBase

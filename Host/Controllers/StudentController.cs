@@ -5,15 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
+    [Authorize(Roles = "Admin,Teacher")]
     [Route("api/[controller]")]
     [ApiController]
     public class StudentController(IStudentService studentService) : ControllerBase
     {
         private readonly IStudentService _studentService = studentService;
-        // public StudentController(IStudentService studentService) 
-        // {
-        //     _studentService = studentService;
-        // }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] StudentDto studentDto)
@@ -43,14 +40,12 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin,Teacher")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _studentService.GetAll();
             return result.Status ? Ok(result) : BadRequest(result);
-        }
-        
+        }        
 
         [HttpGet("GetAll/{levelId}")]
         public async Task<IActionResult> GetAll(Guid levelId)

@@ -37,6 +37,24 @@ namespace SchoolApp.Application.Services
        return response;
     }
 
+    public async Task<BaseResponse<SessionDto>> EndSession()
+    {
+        var response = new BaseResponse<SessionDto>();
+        var getSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true && s.IsDeleted == false);
+        if (getSession is null)
+        {
+            response.Message = "No ongoing session found";
+            return response;
+        }
+
+        getSession.CurrentSession = false;  
+
+        await _unitOfWork.Session.Update(getSession);
+        response.Message = "Session ended successfully";
+        response.Status = true;
+        return response;
+    }
+
     public async Task<BaseResponse<SessionDto>> Delete(Guid sessionId)
     {
         var response = new BaseResponse<SessionDto>();

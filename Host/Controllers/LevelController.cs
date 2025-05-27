@@ -5,15 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class LevelController(ILevelService levelService) : ControllerBase
     {
         private readonly ILevelService _levelService = levelService;
-        // public LevelController(ILevelService levelService) 
-        // {
-        //     _levelService = levelService;
-        // }
 
         [HttpPost("Create")]
         public async Task<IActionResult> Create([FromForm]LevelDto levelDto)
@@ -23,7 +20,6 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _levelService.GetAll();

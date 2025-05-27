@@ -5,6 +5,7 @@ using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Host.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ResultController(IResultService resultService) : ControllerBase
@@ -27,7 +28,8 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("Get/{id}")] 
+        [HttpGet("Get/{id}")]
+        [Authorize(Roles = "Admin, Teacher, Student")]
         public async Task<IActionResult> Get([FromRoute]Guid id)
         {
             var result = await _resultService.Get(id);
@@ -43,6 +45,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<IActionResult> GetAllResult([FromRoute]Guid subjectId)
         {
             var result = await _resultService.GetAllResult(subjectId);
@@ -50,6 +53,7 @@ namespace SchoolApp.Host.Controllers
         }
         
         [HttpPut("Update/{id}")]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> Update([FromRoute]Guid id, Guid subjectId, ResultDto resultDto)
         {
             var result = await _resultService.Update(resultDto, id, subjectId);
@@ -57,6 +61,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPost("Delete/{id}")]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> Delete([FromRoute]Guid id)
         {
             var result = await _resultService.Delete(id);
