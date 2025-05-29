@@ -26,6 +26,14 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize(Roles = "Student")]
+        [HttpGet("GetProfile")]
+        public async Task<IActionResult> GetByCurrentUserId()
+        {
+            var result = await _studentService.GetByCurrentUserId();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("GetByStudentId")]
         public async Task<IActionResult> GetByStudentId(string studentId)
         {

@@ -26,6 +26,7 @@ namespace SchoolApp.Infrastructure.Repositories
         {
             var teacher = _context.Teachers
             .Include(t => t.TeacherSubjects)
+            .ThenInclude(ts => ts.Subject)
             .FirstOrDefaultAsync(expression);
 
             return await teacher;

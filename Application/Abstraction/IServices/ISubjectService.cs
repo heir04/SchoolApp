@@ -7,6 +7,7 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto);
         Task<BaseResponse<SubjectDto>> Update(SubjectDto subjectDto, Guid subjectId);
         Task<BaseResponse<SubjectDto>> Get(Guid id);
+        Task<BaseResponse<IEnumerable<SubjectDto>>> GetSubjectsByTeacher();
         Task<BaseResponse<SubjectDto>> Delete(Guid subjectId);
         Task<BaseResponse<IEnumerable<SubjectDto>>> GetAll();
     }

@@ -5,15 +5,18 @@ using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
 using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
+using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SchoolApp.Application.Services
 {
-    public class AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IUnitOfWork unitOfWork) : IAdminService
+    public class AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IAdminService
     {
         private readonly ApplicationContext _context = context;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IAdminRepository _adminRepository = adminRepository;
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
         {
@@ -78,6 +81,40 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             var admin = await _adminRepository.Get(a => a.Email == email);
+            if (admin == null)
+            {
+                response.Message = "admin gotten";
+                return response;
+            }
+            var adminDto = new AdminDto
+            {
+                Id = admin.Id,
+                Email = admin.Email,
+                FirstName = admin.FirstName,
+                LastName = admin.LastName
+            };
+            
+            response.Message = "admin gotten";
+            response.Status = true;
+            return response;
+        }
+        
+        public async Task<BaseResponse<AdminDto>> GetByCurrentUserId()
+        {
+            var response = new BaseResponse<AdminDto>();
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+            var adminExist = await _unitOfWork.Admin.ExistsAsync(a => a.UserId == userId && a.IsDeleted == false);
+            if (!adminExist)
+            {
+                response.Message = "admin not found";
+                return response;
+            }
+            var admin = await _adminRepository.Get(a => a.UserId == userId);
             if (admin == null)
             {
                 response.Message = "admin gotten";

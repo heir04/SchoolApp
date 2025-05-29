@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Teacher")]
     [Route("api/[controller]")]
     [ApiController]
     public class LevelController(ILevelService levelService) : ControllerBase

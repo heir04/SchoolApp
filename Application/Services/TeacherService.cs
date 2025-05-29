@@ -6,13 +6,16 @@ using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
 using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
+using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SchoolApp.Application.Services
 {
-    public class TeacherService(IUnitOfWork unitOfWork, ApplicationContext context) : ITeacherService
+    public class TeacherService(IUnitOfWork unitOfWork, ApplicationContext context, IHttpContextAccessor httpContextAccessor) : ITeacherService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly ApplicationContext _context = context;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<TeacherDto>> Register(TeacherDto teacherDto)
         {
@@ -33,7 +36,6 @@ namespace SchoolApp.Application.Services
                 UserName = $"{teacherDto.FirstName}{teacherDto.LastName}",
                 HashSalt = saltString,
                 PasswordHash = hashedPassword,
-                // PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
                 Email = teacherDto.Email?.ToLower()
             };
 
@@ -100,7 +102,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.Id == id);
+            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.Id == id);
             if (teacher == null)
             {
                 response.Message = "Teacher not found";
@@ -111,7 +113,8 @@ namespace SchoolApp.Application.Services
             {
                 FirstName = teacher.FirstName,
                 LastName = teacher.LastName,
-                Email = teacher.Email
+                Email = teacher.Email,
+                Subjects = teacher.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             };
 
             response.Data =teacherDto;
@@ -130,7 +133,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.Email == email);
+            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.Email == email);
 
             if (teacher == null)
             {
@@ -142,10 +145,49 @@ namespace SchoolApp.Application.Services
             {
                 FirstName = teacher.FirstName,
                 LastName = teacher.LastName,
-                Email = teacher.Email
+                Email = teacher.Email,
+                Subjects = teacher.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             };
 
-            response.Data =teacherDto;
+            response.Data = teacherDto;
+            response.Message = "Success";
+            response.Status = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<TeacherDto>> GetByCurrentUserId()
+        {
+            var response = new BaseResponse<TeacherDto>();
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+            var teacherExist = await _unitOfWork.Teacher.ExistsAsync(t => t.UserId == userId && t.IsDeleted == false);
+            if (!teacherExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
+            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
+
+            if (teacher == null)
+            {
+                response.Message = "Teacher not found";
+                return response;
+            }
+
+            var teacherDto = new TeacherDto
+            {
+                FirstName = teacher.FirstName,
+                LastName = teacher.LastName,
+                Email = teacher.Email,
+                Subjects = teacher.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
+            };
+
+            response.Data = teacherDto;
             response.Message = "Success";
             response.Status = true;
             return response;

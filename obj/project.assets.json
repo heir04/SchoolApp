@@ -4961,11 +4961,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+      "projectUniqueName": "C:\\Users\\Ismail\\desktop\\schoolapp\\schoolapp.csproj",
       "projectName": "schoolapp",
-      "projectPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\schoolapp.csproj",
+      "projectPath": "C:\\Users\\Ismail\\desktop\\schoolapp\\schoolapp.csproj",
       "packagesPath": "C:\\Users\\Ismail\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ismail\\Desktop\\SchoolApp\\obj\\",
+      "outputPath": "C:\\Users\\Ismail\\desktop\\schoolapp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Ismail\\AppData\\Roaming\\NuGet\\NuGet.Config"

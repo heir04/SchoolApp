@@ -5,14 +5,16 @@ using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Core.Domain.Identity;
 using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
+using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SchoolApp.Application.Services
 {
-    public class StudentService(IUnitOfWork unitOfWork, ApplicationContext context) : IStudentService
+    public class StudentService(IUnitOfWork unitOfWork, ApplicationContext context, IHttpContextAccessor httpContextAccessor) : IStudentService
     {
         private readonly ApplicationContext _context = context;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        // private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<StudentDto>> Delete(Guid id)
         {
@@ -62,7 +64,8 @@ namespace SchoolApp.Application.Services
                 FirstName = student.FirstName,
                 LastName = student.LastName,
                 Email = student.Email,
-                //LevelId = student.LevelId,
+                LevelName = student.Level?.LevelName,
+                StudentId = student.StudentId
             };
            
             response.Data = studentDto;
@@ -95,7 +98,48 @@ namespace SchoolApp.Application.Services
                 FirstName = student.FirstName,
                 LastName = student.LastName,
                 Email = student.Email,
-                StudentId = student.StudentId
+                StudentId = student.StudentId,
+                LevelName = student.Level?.LevelName,
+            };
+            
+            response.Data = studentDto;
+            response.Message = "getStudent gotten";
+            response.Status = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<StudentDto>> GetByCurrentUserId()
+        {
+            var response = new BaseResponse<StudentDto>();
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.UserId == userId && s.IsDeleted == false);
+            if (!studentExist)
+            {
+                response.Message = "Not found";
+                return response;
+            }
+
+            var student = await _unitOfWork.Student.GetStudent(s => s.UserId == userId && !s.IsDeleted);
+            if (student == null)
+            {
+                response.Message = "not found";
+                response.Status = false;
+                return response;
+            }
+            
+            var studentDto = new StudentDto
+            {
+                Id = student.Id,
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                Email = student.Email,
+                StudentId = student.StudentId,
+                LevelName = student.Level?.LevelName,
             };
             
             response.Data = studentDto;
@@ -215,7 +259,6 @@ namespace SchoolApp.Application.Services
                 UserName = $"{studentDto.FirstName}{studentDto.LastName}",
                 HashSalt = saltString,
                 PasswordHash = hashedPassword,
-                // PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
                 Email = studentDto.Email?.ToLower()
             };
 
@@ -244,17 +287,6 @@ namespace SchoolApp.Application.Services
             }
             
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
-            if (studentDto.StudentId is null )
-            {
-                response.Message = "Student or UserId is null";
-                return response;
-            }
-
-            if (user is null)
-            {
-                response.Message = "Student or UserId is null";
-                return response;
-            }
 
             var student = new Student
             {

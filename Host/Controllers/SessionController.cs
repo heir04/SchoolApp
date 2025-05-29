@@ -24,6 +24,13 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPut("EndSession")]
+        public async Task<IActionResult> EndSession()
+        {
+            var result = await _sessionService.EndSession();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {

@@ -5,7 +5,7 @@ using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController(IAdminService adminService) : ControllerBase
@@ -23,6 +23,13 @@ namespace SchoolApp.Host.Controllers
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _adminService.Get(id);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+        
+        [HttpGet("GetProfile")]
+        public async Task<IActionResult> GetByCurrentUserId()
+        {
+            var result = await _adminService.GetByCurrentUserId();
             return result.Status ? Ok(result) : BadRequest(result);
         }
 

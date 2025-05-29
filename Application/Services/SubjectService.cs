@@ -2,12 +2,15 @@ using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
+using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SchoolApp.Application.Services
 {
-    public class SubjectService(IUnitOfWork unitOfWork) : ISubjectService
+    public class SubjectService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : ISubjectService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto)
         {
@@ -133,6 +136,43 @@ namespace SchoolApp.Application.Services
 
             subject.Name = subjectDto.Name;
             await _unitOfWork.Subject.Update(subject);
+            response.Message = "Success";
+            response.Status = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<IEnumerable<SubjectDto>>> GetSubjectsByTeacher()
+        {
+            var response = new BaseResponse<IEnumerable<SubjectDto>>();
+
+            // Get user ID from JWT
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+
+            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
+            if (teacher == null)
+            {
+                response.Message = "Teacher not found";
+                return response;
+            }
+
+            var subjects = teacher.TeacherSubjects.Select(ts => new SubjectDto
+            {
+                Id = ts.SubjectId,
+                Name = ts.Subject.Name
+            }).ToList();
+
+            if (!subjects.Any())
+            {
+                response.Message = "No subjects assigned to this teacher";
+                return response;
+            }
+
+            response.Data = subjects;
             response.Message = "Success";
             response.Status = true;
             return response;

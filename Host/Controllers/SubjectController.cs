@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles ="Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class SubjectController : ControllerBase
@@ -17,6 +16,7 @@ namespace SchoolApp.Host.Controllers
             _subjectService = subjectService;
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpPost("Create")]
         public async Task<IActionResult> Register([FromForm] SubjectDto subjectDto)
         {
@@ -24,6 +24,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpGet("Get/{id}")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
@@ -31,14 +32,24 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize(Roles ="Admin,Teacher")]
         [HttpGet("GetAll")]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _subjectService.GetAll();
             return result.Status ? Ok(result) : BadRequest(result);
         }
-
+        
+        [Authorize(Roles ="Teacher")]
+        [HttpGet("GetSubjectsByTeacher")]
+        public async Task<IActionResult> GetSubjectsByTeacher()
+        {
+            var result = await _subjectService.GetSubjectsByTeacher();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+        
+        
+        [Authorize(Roles ="Admin")]
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> Update([FromRoute]Guid id, SubjectDto subjectDto)
         {
@@ -46,6 +57,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [Authorize(Roles ="Admin")]
         [HttpPost("Delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
