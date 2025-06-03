@@ -8,6 +8,7 @@ using SchoolApp.Core.Helper;
 using SchoolApp.Infrastructure.Context;
 using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.EntityFrameworkCore;
 
 namespace SchoolApp.Application.Services
 {
@@ -63,7 +64,10 @@ namespace SchoolApp.Application.Services
                 Email = teacherDto.Email?.ToLower(),
                 UserId = user.Id,
                 User = user,
-                CreatedOn = DateTime.Today
+                DateOfBirth = teacherDto.DateOfBirth,
+                PhoneNumber = teacherDto.PhoneNumber,
+                Gender = teacherDto.Gender,
+                Address = teacherDto.Address
             };
             
            var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
@@ -76,9 +80,15 @@ namespace SchoolApp.Application.Services
                     TeacherId = teacherDto.Id,
                     SubjectId = subject.Id,
                     Teacher = teacher,
-                    Subject = subject,
-                    CreatedOn = DateTime.Today
+                    Subject = subject
                 };
+                var ifExists = await _context.TeacherSubjects.AnyAsync(ts => ts.SubjectId == subject.Id);
+                if (ifExists)
+                {
+                    response.Message = "subject already assigned to a teacher";
+                    return response;
+                }
+                
                 teacherSubjects.Add(teacherSubject);
            }
 
@@ -114,6 +124,10 @@ namespace SchoolApp.Application.Services
                 FirstName = teacher.FirstName,
                 LastName = teacher.LastName,
                 Email = teacher.Email,
+                DateOfBirth = teacher.DateOfBirth,
+                PhoneNumber = teacher.PhoneNumber,
+                Gender = teacher.Gender,
+                Address = teacher.Address,
                 Subjects = teacher.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             };
 
@@ -184,6 +198,11 @@ namespace SchoolApp.Application.Services
                 FirstName = teacher.FirstName,
                 LastName = teacher.LastName,
                 Email = teacher.Email,
+                DateOfBirth = teacher.DateOfBirth,
+                PhoneNumber = teacher.PhoneNumber,
+                Gender = teacher.Gender,
+                Address = teacher.Address,
+                CreatedOn = teacher.CreatedOn,
                 Subjects = teacher.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             };
 
@@ -211,6 +230,11 @@ namespace SchoolApp.Application.Services
                 FirstName = t.FirstName,
                 LastName = t.LastName,
                 Email = t.Email,
+                DateOfBirth = t.DateOfBirth,
+                PhoneNumber = t.PhoneNumber,
+                Gender = t.Gender,
+                Address = t.Address,
+                CreatedOn = t.CreatedOn,
                 Subjects = t.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
             }).ToList();
             
@@ -237,9 +261,13 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            teacher.FirstName = teacherDto.FirstName;
+            teacher.FirstName = teacherDto.FirstName ?? teacher.FirstName;
             teacher.LastName = teacherDto.LastName;
             teacher.Email = teacherDto.Email;
+            teacher.DateOfBirth = teacherDto.DateOfBirth;
+            teacher.PhoneNumber = teacherDto.PhoneNumber;
+            teacher.Gender = teacherDto.Gender;
+            teacher.Address = teacherDto.Address;
             await _unitOfWork.Teacher.Update(teacher);
             response.Message = "Success";
             response.Status = true;

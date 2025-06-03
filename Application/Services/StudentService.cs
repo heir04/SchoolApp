@@ -65,7 +65,12 @@ namespace SchoolApp.Application.Services
                 LastName = student.LastName,
                 Email = student.Email,
                 LevelName = student.Level?.LevelName,
-                StudentId = student.StudentId
+                StudentId = student.StudentId,
+                DateOfBirth = student.DateOfBirth,
+                PhoneNumber = student.PhoneNumber,
+                Gender = student.Gender,
+                Address = student.Address,
+                CreatedOn = student.CreatedOn
             };
            
             response.Data = studentDto;
@@ -140,6 +145,11 @@ namespace SchoolApp.Application.Services
                 Email = student.Email,
                 StudentId = student.StudentId,
                 LevelName = student.Level?.LevelName,
+                DateOfBirth = student.DateOfBirth,
+                PhoneNumber = student.PhoneNumber,
+                Gender = student.Gender,
+                Address = student.Address,
+                CreatedOn = student.CreatedOn
             };
             
             response.Data = studentDto;
@@ -169,7 +179,12 @@ namespace SchoolApp.Application.Services
                 LevelId = s.LevelId,
                 LevelName = s.Level?.LevelName,
                 Email = s.Email,
-                StudentId = s.StudentId
+                StudentId = s.StudentId,
+                DateOfBirth = s.DateOfBirth,
+                PhoneNumber = s.PhoneNumber,
+                Gender = s.Gender,
+                Address = s.Address,
+                CreatedOn = s.CreatedOn
             }).ToList();
             
             response.Message = "list of students";
@@ -199,7 +214,12 @@ namespace SchoolApp.Application.Services
                 Email = s.Email,
                 LevelId = s.LevelId,
                 LevelName = s.Level?.LevelName,
-                StudentId = s.StudentId 
+                StudentId = s.StudentId,
+                DateOfBirth = s.DateOfBirth,
+                PhoneNumber = s.PhoneNumber,
+                Gender = s.Gender,
+                Address = s.Address,
+                CreatedOn = s.CreatedOn
             }).ToList();
 
             response.Message = "list of students";
@@ -231,7 +251,12 @@ namespace SchoolApp.Application.Services
                 FirstName = student.FirstName,
                 LastName = student.LastName,
                 Email = student.Email,
-                LevelName = student.LastName  
+                LevelName = student.LastName,
+                DateOfBirth = student.DateOfBirth,
+                PhoneNumber = student.PhoneNumber,
+                Gender = student.Gender,
+                Address = student.Address,
+                CreatedOn = student.CreatedOn
             };
            
             response.Data = studentDto;
@@ -297,33 +322,19 @@ namespace SchoolApp.Application.Services
                 LevelId = getlevel.Id,
                 Level = getlevel,
                 UserId = user.Id,
-                User = user
+                User = user,
+                DateOfBirth = studentDto.DateOfBirth,
+                PhoneNumber = studentDto.PhoneNumber,
+                Gender = studentDto.Gender,
+                Address = studentDto.Address
             };
 
             var addStudent = await _unitOfWork.Student.Register(student);
             await _unitOfWork.User.Register(user);
             await _unitOfWork.SaveChangesAsync();
-            // student.CreatedBy = addStudent.Id;
-            // student.LastModifiedBy = addStudent.Id;
-            // student.IsDeleted = false;
-            // await _unitOfWork.Student.Update(student);
-        
-
-            // var studentDTo = new StudentDto
-            // {
-            //     Id = addStudent.Id,
-            //     StudentId = addStudent.StudentId,
-            //     FirstName = addStudent.FirstName,
-            //     LastName = addStudent.LastName,
-            //     Email = addStudent.Email,
-            //     LevelName = addStudent.Level.LevelName
-            //     //LevelId = addStudent.LevelId
-            // };
-
           
             response.Message = "Student registered succesfully";
             response.Status = true;
-            // Data = studentDTo
             return response;
         }
 
@@ -343,7 +354,7 @@ namespace SchoolApp.Application.Services
                 response.Status = false;
             }
 
-            var getUser = await _unitOfWork.User.Get(u => u.Email == student.Email);
+            var getUser = await _unitOfWork.User.Get(u => u.Id == student.UserId);
             if (getUser == null)
             {
                 response.Message = "User not found";
@@ -352,10 +363,23 @@ namespace SchoolApp.Application.Services
             getUser.Email = studentDto.Email;
             await _unitOfWork.User.Update(getUser);
 
-            student.User.Email = studentDto.Email ?? student.User.Email;
+            var getlevel = await _unitOfWork.Level.Get(l => l.LevelName == studentDto.LevelName);
+            if (getlevel == null)
+            {
+                response.Message = "level not found";
+                return response;
+            }
+
+            student.Email = studentDto.Email ?? student.Email;
             student.FirstName = studentDto.FirstName ?? student.FirstName;
             student.LastName = studentDto.LastName ?? student.LastName;
-            //student.LevelId = studentDto.LevelId;
+            student.DateOfBirth = studentDto.DateOfBirth;
+            student.PhoneNumber = studentDto.PhoneNumber ?? student.PhoneNumber;
+            student.Gender = studentDto.Gender;
+            student.Address = studentDto.Address;
+            student.LastModifiedOn = DateTime.UtcNow;
+            student.Level = getlevel;
+            student.LevelId = getlevel.Id;
             await _unitOfWork.Student.Update(student);
 
             response.Message = "updated succesfully";

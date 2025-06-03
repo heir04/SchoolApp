@@ -63,7 +63,11 @@ namespace SchoolApp.Application.Services
                 Id = admin.Id,
                 Email = admin.Email,
                 FirstName = admin.FirstName,
-                LastName = admin.LastName
+                LastName = admin.LastName,
+                DateOfBirth = admin.DateOfBirth,
+                PhoneNumber = admin.PhoneNumber,
+                Gender = admin.Gender,
+                Address = admin.Address
             };
         
             response.Message = "admin gotten";
@@ -125,11 +129,17 @@ namespace SchoolApp.Application.Services
                 Id = admin.Id,
                 Email = admin.Email,
                 FirstName = admin.FirstName,
-                LastName = admin.LastName
+                LastName = admin.LastName,
+                DateOfBirth = admin.DateOfBirth,
+                PhoneNumber = admin.PhoneNumber,
+                Gender = admin.Gender,
+                Address = admin.Address,
+                CreatedOn = admin.CreatedOn
             };
             
             response.Message = "admin gotten";
             response.Status = true;
+            response.Data = adminDto;
             return response;
         }
 
@@ -150,7 +160,12 @@ namespace SchoolApp.Application.Services
                 Id = a.Id,
                 FirstName = a.FirstName,
                 LastName = a.LastName,
-                Email = a.Email
+                Email = a.Email,
+                DateOfBirth = a.DateOfBirth,
+                PhoneNumber = a.PhoneNumber,
+                Gender = a.Gender,
+                Address = a.Address,
+                CreatedOn = a.CreatedOn
             }).ToList();
         
             response.Data = adminDtos;
@@ -205,6 +220,10 @@ namespace SchoolApp.Application.Services
                 Email = adminDto.Email?.ToLower(),
                 UserId = user.Id,
                 User = user,
+                DateOfBirth = adminDto.DateOfBirth,
+                PhoneNumber = adminDto.PhoneNumber,
+                Gender = adminDto.Gender,
+                Address = adminDto.Address,
                 CreatedOn = DateTime.Today
             };
 
@@ -244,7 +263,7 @@ namespace SchoolApp.Application.Services
             }
             var admin = await _adminRepository.Get(a => a.Id == id);
             
-            var getUser = await _userRepository.Get(u => u.Email == admin.Email);
+            var getUser = await _userRepository.Get(u => u.Id == admin.UserId);
             if (getUser == null)
             {
                 response.Message = "User not found";
@@ -253,9 +272,14 @@ namespace SchoolApp.Application.Services
             getUser.Email = adminDto.Email;
             await _userRepository.Update(getUser);
 
-            admin.User.Email = adminDto.Email ?? admin.User.Email;
             admin.FirstName = adminDto.FirstName ?? admin.FirstName;
             admin.LastName = adminDto.LastName ?? admin.LastName;
+            admin.DateOfBirth = adminDto.DateOfBirth;
+            admin.PhoneNumber = adminDto.PhoneNumber ?? admin.PhoneNumber;
+            admin.Gender = adminDto.Gender ?? admin.Gender;
+            admin.Address = adminDto.Address ?? admin.Address;
+            admin.LastModifiedBy = admin.Id;
+            admin.LastModifiedOn = DateTime.UtcNow;
             await _adminRepository.Update(admin);
 
            

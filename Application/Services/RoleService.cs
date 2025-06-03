@@ -21,11 +21,11 @@ namespace SchoolApp.Application.Services
 
             var newRole = new Role
             {
-                Name = roleDto.Name,
-                CreatedOn = DateTime.Today
+                Name = roleDto.Name
             };
 
             await _roleRepository.Register(newRole);
+            await _roleRepository.SaveChangesAsync();
 
             response.Message = "Role created succesfully";
             response.Status = true;
