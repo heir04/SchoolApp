@@ -10,6 +10,7 @@ namespace SchoolApp.Application.Abstraction.IRepositories
         ISubjectRepository Subject { get; }
         ISessionRepository Session { get; }
         ITeacherRepository Teacher { get; }
+        ITermRepository Term { get; }
         IUserRepository User { get; }
         Task<int> SaveChangesAsync();
     }

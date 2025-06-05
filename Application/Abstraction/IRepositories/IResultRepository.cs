@@ -7,5 +7,6 @@ namespace SchoolApp.Application.Abstraction.IRepositories
     {
         Task<List<Result>> GetAllResult(Expression<Func<Result, bool>> expression);
         Task<Result> GetResult(Expression<Func<Result, bool>> expression);
+        Task<Result> GetResultSubjectScore(Expression<Func<Result, bool>> expression);
     }
 }

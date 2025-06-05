@@ -11,11 +11,12 @@ namespace SchoolApp.Core.Domain.Entities
         public Level? Level { get; set; }
         public Guid SessionId { get; set; }
         public Session? Session { get; set; }
-        public Terms Terms{ get; set; }
+        public Guid TermId { get; set; }
+        public Term? Term { get; set; } 
         public double TermTotalScore => SubjectScores.Sum(s =>
         s.TotalScore);
         // public string Grade{ get; set; }
         public string? Remark {get;set;}
-         public ICollection<SubjectScore> SubjectScores { get; set; } = new HashSet<SubjectScore>();
+        public ICollection<SubjectScore> SubjectScores { get; set; } = new HashSet<SubjectScore>();
     }
 }

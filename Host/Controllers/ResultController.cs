@@ -22,9 +22,9 @@ namespace SchoolApp.Host.Controllers
 
         [HttpPost("CreateResults")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> CreateResults([FromForm] ResultDto resultDto)
+        public async Task<IActionResult> CreateResults([FromForm] BulkResultDto bulkResultDto)
         {
-            var result = await _resultService.CreateBulkResults(resultDto);
+            var result = await _resultService.CreateBulkResults(bulkResultDto);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 

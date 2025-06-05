@@ -22,8 +22,9 @@ namespace SchoolApp.Infrastructure.Context
         public DbSet<Subject> Subjects{get; set;}
         public DbSet<Session> Sessions { get; set; }
         public DbSet<StudentSubject> StudentSubjects { get; set;}
-        public DbSet<Teacher> Teachers{get; set;}
-        public DbSet<TeacherSubject> TeacherSubjects{get; set;}
+        public DbSet<Teacher> Teachers {get; set;}
+        public DbSet<Term> Terms { get; set; }
+        public DbSet<TeacherSubject> TeacherSubjects { get; set; }
 
         // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlite("Data Source=C:/Users/Ismail/Desktop/Sqllite/Db/SchoolApp.db");
     }

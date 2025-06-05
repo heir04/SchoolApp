@@ -2,14 +2,15 @@ using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
+using SchoolApp.Infrastructure.Context;
 
 namespace SchoolApp.Application.Services
 {
-    public class SessionService(IUnitOfWork unitOfWork, ISessionRepository sessionRepository) : ISessionService
+    public class SessionService(IUnitOfWork unitOfWork, ApplicationContext context) : ISessionService
 {
     public IUnitOfWork _unitOfWork = unitOfWork;
-    public ISessionRepository _sessionRepository = sessionRepository;
-   
+    public ApplicationContext _context = context;
+
     public async Task<BaseResponse<SessionDto>> Create(SessionDto sessionDto)
     {
         var response = new BaseResponse<SessionDto>();
@@ -27,7 +28,12 @@ namespace SchoolApp.Application.Services
             StartDate = sessionDto.StartDate,
             EndDate = sessionDto.EndDate,
             CurrentSession = true,
-            CreatedOn = DateTime.Today
+            Terms =
+            [
+                new() { Name = "First Term", CurrentTerm = true},
+                new() { Name = "Second Term", CurrentTerm = false},
+                new() { Name = "Third Term", CurrentTerm = false}
+            ]
         };
 
        await _unitOfWork.Session.Register(session);
@@ -35,6 +41,28 @@ namespace SchoolApp.Application.Services
        response.Message = "Success";
        response.Status = true;
        return response;
+    }
+
+    public async Task<BaseResponse<SessionDto>> UpdateTerm(Guid termId)
+    {
+        var response = new BaseResponse<SessionDto>();
+        var session = await _unitOfWork.Session.GetCurrentSession();
+        var currentTerm = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+        var term = await _unitOfWork.Term.Get(t => t.Id == termId);
+        
+        if (session is null || currentTerm is null)
+        {
+            response.Message = "No current session or term found";
+            return response;
+        }
+
+        currentTerm.CurrentTerm = false;
+        term.CurrentTerm = true;
+
+        await _unitOfWork.SaveChangesAsync();
+        response.Message = "Term updated";
+        response.Status = true;
+        return response;
     }
 
     public async Task<BaseResponse<SessionDto>> EndSession()
@@ -47,7 +75,7 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        getSession.CurrentSession = false;  
+        getSession.CurrentSession = false;
 
         await _unitOfWork.Session.Update(getSession);
         response.Message = "Session ended successfully";
@@ -90,7 +118,7 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        var session = await _sessionRepository.Get(s => s.Id == id);
+        var session = await _unitOfWork.Session.Get(s => s.Id == id);
         if (session is null)
         {
             response.Message = "Not found";

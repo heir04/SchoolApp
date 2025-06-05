@@ -4,8 +4,8 @@ namespace SchoolApp.Application.Models.Dto
     {
         public Guid Id { get; set; }
         public string? SessionName { get; set; } 
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
         public bool CurrentSession { get; set; }
     }
 }

@@ -16,6 +16,7 @@ namespace SchoolApp.Infrastructure.Repositories
         public ISubjectRepository Subject { get; }
         public ISessionRepository Session { get; }
         public ITeacherRepository Teacher { get; }
+        public ITermRepository Term { get; }
         public IUserRepository User { get; }
 
         public UnitOfWork(
@@ -28,6 +29,7 @@ namespace SchoolApp.Infrastructure.Repositories
             ISubjectRepository subjectRepository,
             ISessionRepository sessionRepository,
             ITeacherRepository teacherRepository,
+            ITermRepository termRepository,
             IUserRepository userRepository
         )
         {
@@ -40,6 +42,7 @@ namespace SchoolApp.Infrastructure.Repositories
             Subject = subjectRepository;
             Session = sessionRepository;
             Teacher = teacherRepository;
+            Term = termRepository;
             User = userRepository;
         }
         public void Dispose()

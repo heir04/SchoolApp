@@ -12,7 +12,8 @@ namespace SchoolApp.Application.Models.Dto
         public Guid SubjectId { get; set; }
         public double ContinuousAssessment { get; set; }
         public double ExamScore { get; set; }
-        public Terms Terms { get; set; }
+        public string? TermName { get; set; }
+        public string? SessionName { get; set; }
         public double TotalScore { get; set; }
         public string? Grade { get; set; }
         public string? Remark { get; set; }
