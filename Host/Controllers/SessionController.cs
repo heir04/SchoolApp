@@ -24,10 +24,17 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPut("EndSession")]
-        public async Task<IActionResult> EndSession()
+        [HttpGet("GetCurrentSessionAndTermName")]
+        public async Task<IActionResult> GetCurrentSessionAndTermName()
         {
-            var result = await _sessionService.EndSession();
+            var result = await _sessionService.GetCurrentSessionAndTermName();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("GetAllSessionTerm")]
+        public async Task<IActionResult> GetAllSessionTerm()
+        {
+            var result = await _sessionService.GetAllSessionTerm();
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
@@ -38,17 +45,31 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPut("EndSession")]
+        public async Task<IActionResult> EndSession()
+        {
+            var result = await _sessionService.EndSession();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPut("Update/{id}")]
-        public async Task<IActionResult> Update([FromRoute]Guid id, SessionDto sessionDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, SessionDto sessionDto)
         {
             var result = await _sessionService.Update(sessionDto, id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost("Delete/{id}")]
-        public async Task<IActionResult> Delete([FromRoute]Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _sessionService.Delete(id);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+        
+        [HttpPut("UpdateCurrentTerm/{id}")]
+        public async Task<IActionResult> UpdateCurrentTerm([FromRoute]Guid termId)
+        {
+            var result = await _sessionService.UpdateCurrentTerm(termId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
     }

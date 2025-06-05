@@ -60,6 +60,14 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPut("GiveRemark/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GiveRemark([FromRoute]Guid id, ResultDto resultDto)
+        {
+            var result = await _resultService.GiveRemark(id, resultDto);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPost("Delete/{id}")]
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> Delete([FromRoute]Guid id)

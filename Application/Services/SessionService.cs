@@ -43,7 +43,7 @@ namespace SchoolApp.Application.Services
        return response;
     }
 
-    public async Task<BaseResponse<SessionDto>> UpdateTerm(Guid termId)
+    public async Task<BaseResponse<SessionDto>> UpdateCurrentTerm(Guid termId)
     {
         var response = new BaseResponse<SessionDto>();
         var session = await _unitOfWork.Session.GetCurrentSession();
@@ -61,6 +61,29 @@ namespace SchoolApp.Application.Services
 
         await _unitOfWork.SaveChangesAsync();
         response.Message = "Term updated";
+        response.Status = true;
+        return response;
+    }
+
+    public async Task<BaseResponse<IEnumerable<TermDto>>> GetAllSessionTerm()
+    {
+        var response = new BaseResponse<IEnumerable<TermDto>>();
+        var session = await _unitOfWork.Session.GetCurrentSession();
+        var terms = session.Terms.ToList();
+
+        if (terms is null || !terms.Any())
+        {
+            response.Message = "No terms found";
+            return response;
+        }
+
+        response.Data = terms.Select(t => new TermDto
+        {
+            Id = t.Id,
+            Name = t.Name,
+            SessionId = t.SessionId
+        });
+        response.Message = "Success";
         response.Status = true;
         return response;
     }
@@ -185,6 +208,35 @@ namespace SchoolApp.Application.Services
         session.StartDate = sessionDto.StartDate;
         session.EndDate = sessionDto.EndDate;
         await _unitOfWork.Session.Update(session);
+        response.Message = "Success";
+        response.Status = true;
+        return response;
+    }
+
+    public async Task<BaseResponse<CurrentSessionTermDto>> GetCurrentSessionAndTermName()
+    {
+        var response = new BaseResponse<CurrentSessionTermDto>();
+        var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true && s.IsDeleted == false);
+
+        if (session == null)
+        {
+            response.Message = "No current session found";
+            return response;
+        }
+
+        var currentTerm = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+
+        if (currentTerm == null)
+        {
+            response.Message = "No current term found for the session";
+            return response;
+        }
+
+        response.Data = new CurrentSessionTermDto
+        {
+            SessionName = session.SessionName,
+            TermName = currentTerm.Name
+        };
         response.Message = "Success";
         response.Status = true;
         return response;
