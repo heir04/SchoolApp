@@ -9,6 +9,6 @@ namespace SchoolApp.Application.Models.Dto
     {
         public Guid Id { get; set; }
         public string? Name { get; set; }
-        public Guid SessionId { get; set; }
+        public bool CurrentTerm { get; set; }
     }
 }

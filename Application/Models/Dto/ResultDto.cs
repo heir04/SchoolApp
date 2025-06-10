@@ -1,5 +1,4 @@
 using SchoolApp.Core.Domain.Entities;
-using SchoolApp.Core.Domain.Enums;
 
 namespace SchoolApp.Application.Models.Dto
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -80,8 +81,7 @@ namespace schoolapp.Migrations
                 table: "Results",
                 column: "TermId",
                 principalTable: "Terms",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />

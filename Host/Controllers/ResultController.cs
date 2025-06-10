@@ -51,6 +51,22 @@ namespace SchoolApp.Host.Controllers
             var result = await _resultService.GetAllResult(subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("GetAllByLevel")]
+        [Authorize(Roles = "Admin, Teacher")]
+        public async Task<IActionResult> GetAllResultByLevel([FromRoute]Guid levelId)
+        {
+            var result = await _resultService.GetAllResultByLevel(levelId);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("GetStudentsByLevel/{levelId}/{subjectId}")]
+        [Authorize(Roles = "Admin, Teacher")]
+        public async Task<IActionResult> GetStudentByLevel([FromRoute]Guid levelId,[FromRoute] Guid subjectId)
+        {
+            var result = await _resultService.GetStudentsByLevel(levelId, subjectId);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
         
         [HttpPut("Update/{id}")]
         [Authorize(Roles = "Teacher")]

@@ -8,9 +8,11 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<IEnumerable<StudentResultStatusDto>>> CreateBulkResults(BulkResultDto resultDto);
         Task<BaseResponse<ResultDto>> Update(ResultDto resultDto, Guid resultId, Guid subjectId);
         Task<BaseResponse<ResultDto>> Get(Guid id);
+        Task<BaseResponse<IEnumerable<StudentDto>>> GetStudentsByLevel(Guid levelId, Guid subjectId);
         Task<BaseResponse<ResultDto>> Delete(Guid resultId);
         Task<BaseResponse<ResultDto>> CheckResult();
         Task<BaseResponse<ResultDto>> GiveRemark(Guid resultId, ResultDto resultDto);
         Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResult(Guid subjectId);
+        Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByLevel(Guid levelId);
     }
 }

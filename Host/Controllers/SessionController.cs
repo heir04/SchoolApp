@@ -66,7 +66,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
-        [HttpPut("UpdateCurrentTerm/{id}")]
+        [HttpPut("UpdateCurrentTerm/{termId}")]
         public async Task<IActionResult> UpdateCurrentTerm([FromRoute]Guid termId)
         {
             var result = await _sessionService.UpdateCurrentTerm(termId);

@@ -15,7 +15,7 @@ namespace SchoolApp.Infrastructure.Repositories
         public async Task<Session> GetCurrentSession()
         {
             var session = await _context.Sessions
-            .Where(s => s.CurrentSession == true)
+            .Where(s => s.CurrentSession == true && s.IsDeleted == false)
             .Include(s => s.Terms)
             .FirstOrDefaultAsync();
 

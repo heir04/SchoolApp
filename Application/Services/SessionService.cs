@@ -81,7 +81,7 @@ namespace SchoolApp.Application.Services
         {
             Id = t.Id,
             Name = t.Name,
-            SessionId = t.SessionId
+            CurrentTerm = t.CurrentTerm
         });
         response.Message = "Success";
         response.Status = true;
@@ -216,7 +216,7 @@ namespace SchoolApp.Application.Services
     public async Task<BaseResponse<CurrentSessionTermDto>> GetCurrentSessionAndTermName()
     {
         var response = new BaseResponse<CurrentSessionTermDto>();
-        var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true && s.IsDeleted == false);
+        var session = await _unitOfWork.Session.GetCurrentSession();
 
         if (session == null)
         {
