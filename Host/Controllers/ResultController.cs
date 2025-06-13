@@ -22,7 +22,7 @@ namespace SchoolApp.Host.Controllers
 
         [HttpPost("CreateResults")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> CreateResults([FromForm] BulkResultDto bulkResultDto)
+        public async Task<IActionResult> CreateResults([FromBody] BulkResultDto bulkResultDto)
         {
             var result = await _resultService.CreateBulkResults(bulkResultDto);
             return result.Status ? Ok(result) : BadRequest(result);
@@ -44,7 +44,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("GetAll/{subjectId}")]
         [Authorize(Roles = "Admin, Teacher")]
         public async Task<IActionResult> GetAllResult([FromRoute]Guid subjectId)
         {
@@ -52,7 +52,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("GetAllByLevel")]
+        [HttpGet("GetAllByLevel/{levelId}")]
         [Authorize(Roles = "Admin, Teacher")]
         public async Task<IActionResult> GetAllResultByLevel([FromRoute]Guid levelId)
         {

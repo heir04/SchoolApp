@@ -84,6 +84,7 @@ namespace SchoolApp.Application.Services
 
             var subjectDto = new SubjectDto
             {
+                Id = subject.Id,
                 Name = subject.Name
             };
 

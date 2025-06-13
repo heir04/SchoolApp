@@ -28,8 +28,8 @@ namespace SchoolApp.Application.Services
             }
 
             var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
-            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var term = await _unitOfWork.Term.Get(s => s.CurrentTerm == true);
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
             var subject = teacher.TeacherSubjects.FirstOrDefault();
             var student = await _unitOfWork.Student.GetStudent(s => s.Id == studentId);
 
@@ -58,7 +58,7 @@ namespace SchoolApp.Application.Services
 
             var resultExists = await _unitOfWork.Result
                 .ExistsAsync(r => r.SessionId == session.Id && r.StudentId == studentId &&
-                             r.LevelId == student.LevelId);
+                             r.LevelId == student.LevelId && r.TermId == term.Id);
 
             if (!resultExists)
             {
@@ -95,7 +95,7 @@ namespace SchoolApp.Application.Services
             {
                 var getResult = await _unitOfWork.Result
                 .Get(r => r.SessionId == session.Id && r.StudentId == studentId &&
-                r.LevelId == student.LevelId);
+                r.LevelId == student.LevelId && r.TermId == term.Id);
 
                 var subjectScoreExists = await _context.SubjectScores.AnyAsync(ss => ss.ResultId == getResult.Id && ss.SubjectId == subject.Id);
                 if (subjectScoreExists)
@@ -137,8 +137,15 @@ namespace SchoolApp.Application.Services
             }
 
             var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
-            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var term = await _unitOfWork.Term.Get(t => t.CurrentTerm == true);
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+            
+            if (bulkResultDto.SubjectId == Guid.Empty)
+            {
+                response.Message = "subjectId is empty";
+                return response;
+            }
+
             var subject = await _unitOfWork.Subject.Get(s => s.Id == bulkResultDto.SubjectId);
 
             if (teacher == null)
@@ -151,7 +158,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "No session or term is currently set on the system. Please try again later.";
                 return response;
             }
-            if (subject == null)
+            if (subject is null)
             {
                 response.Message = "Subject not found";
                 return response;
@@ -178,7 +185,7 @@ namespace SchoolApp.Application.Services
                 }
 
                 var resultExists = await _unitOfWork.Result.ExistsAsync(r =>
-                    r.SessionId == session.Id && r.StudentId == student.Id && r.LevelId == bulkResultDto.LevelId);
+                    r.SessionId == session.Id && r.StudentId == student.Id && r.LevelId == bulkResultDto.LevelId && r.TermId == term.Id);
 
                 try
                 {
@@ -222,7 +229,7 @@ namespace SchoolApp.Application.Services
                     else
                     {
                         var existingResult = await _unitOfWork.Result.Get(r =>
-                            r.SessionId == session.Id && r.StudentId == student.Id && r.LevelId == bulkResultDto.LevelId);
+                            r.SessionId == session.Id && r.StudentId == student.Id && r.LevelId == bulkResultDto.LevelId && r.TermId == term.Id);
 
                         var subjectScoreExists = await _context.SubjectScores.AnyAsync(ss =>
                             ss.ResultId == existingResult.Id && ss.SubjectId == subject.Id);
@@ -290,8 +297,8 @@ namespace SchoolApp.Application.Services
             }
 
             var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
-            var currentSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var currentTerm = await _unitOfWork.Term.Get(t => t.CurrentTerm == true);
+            var currentSession = await _unitOfWork.Session.GetCurrentSession();
+            var currentTerm = currentSession.Terms.FirstOrDefault(t => t.CurrentTerm == true);
             var students = await _unitOfWork.Student.GetAllStudents(s => s.LevelId == levelId);
 
             if (!teacher.TeacherSubjects.Any(ts => ts.SubjectId == subjectId))
@@ -340,6 +347,7 @@ namespace SchoolApp.Application.Services
             response.Status = true;
             return response;
         }
+        
         public async Task<BaseResponse<ResultDto>> Delete(Guid resultId)
         {
             var response = new BaseResponse<ResultDto>();
@@ -416,12 +424,12 @@ namespace SchoolApp.Application.Services
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
             {
                 response.Message = "Invalid user ID";
-                return response;
+                 return response;
             }
             var checkStudent = await _unitOfWork.Student.Get(s => s.UserId == userId);
-            var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var term = await _unitOfWork.Term.Get(t => t.CurrentTerm == true);
-            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == selectSession.Id && r.TermId == term.Id);
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == session.Id && r.TermId == term.Id);
 
             if (result == null || result.Remark is null)
             {
@@ -435,6 +443,7 @@ namespace SchoolApp.Application.Services
                 Level = result.Level?.LevelName,
                 TermName = result.Term?.Name,
                 SessionName = result.Session?.SessionName,
+                TotalScore = result.TermTotalScore,
                 Remark = result.Remark,
                 SubjectScores = [.. result.SubjectScores.Select(s => new SubjectScoreDto
                 {
@@ -455,8 +464,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResult(Guid subjectId)
         {
             var response = new BaseResponse<IEnumerable<ResultDto>>();
-            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var term = await _unitOfWork.Term.Get(t => t.CurrentTerm == true);
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
             var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id && r.SubjectScores.Any(s => s.SubjectId == subjectId));
 
             if (result is null)
@@ -488,8 +497,8 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByLevel(Guid levelId)
         {
             var response = new BaseResponse<IEnumerable<ResultDto>>();
-            var session = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var term = await _unitOfWork.Term.Get(t => t.CurrentTerm == true);
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
             var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id  && r.LevelId == levelId);
 
             if (result is null)
