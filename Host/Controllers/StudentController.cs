@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles = "Admin,Teacher")]
     [Route("api/[controller]")]
     [ApiController]
     public class StudentController(IStudentService studentService) : ControllerBase
@@ -13,6 +12,7 @@ namespace SchoolApp.Host.Controllers
         private readonly IStudentService _studentService = studentService;
 
         [HttpPost("Register")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> Register([FromForm] StudentDto studentDto)
         {
             var result = await _studentService.Register(studentDto);
@@ -20,14 +20,15 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get/{id}")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _studentService.Get(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Student")]
         [HttpGet("GetProfile")]
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> GetByCurrentUserId()
         {
             var result = await _studentService.GetByCurrentUserId();
@@ -35,6 +36,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetByStudentId")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> GetByStudentId(string studentId)
         {
             var result = await _studentService.GetByStudentId(studentId);
@@ -42,6 +44,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> Get(string email)
         {
             var result = await _studentService.Get(email);
@@ -49,6 +52,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _studentService.GetAll();
@@ -56,6 +60,7 @@ namespace SchoolApp.Host.Controllers
         }        
 
         [HttpGet("GetAll/{levelId}")]
+        [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> GetAll(Guid levelId)
         {
             var result = await _studentService.GetAll(levelId);
@@ -63,14 +68,16 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("Update/{id}")]
-        public async Task<IActionResult> Update([FromRoute]Guid id, StudentDto studentDto)
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, StudentDto studentDto)
         {
             var result = await _studentService.Update(studentDto, id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost("Delete/{id}")]
-        public async Task<IActionResult> Delete([FromRoute]Guid id)
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _studentService.Delete(id);
             return result.Status ? Ok(result) : BadRequest(result);

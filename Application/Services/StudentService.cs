@@ -361,7 +361,7 @@ namespace SchoolApp.Application.Services
                 response.Status = false;
             }
             getUser.Email = studentDto.Email;
-            await _unitOfWork.User.Update(getUser);
+            // await _unitOfWork.User.Update(getUser);
 
             var getlevel = await _unitOfWork.Level.Get(l => l.LevelName == studentDto.LevelName);
             if (getlevel == null)
@@ -380,7 +380,8 @@ namespace SchoolApp.Application.Services
             student.LastModifiedOn = DateTime.UtcNow;
             student.Level = getlevel;
             student.LevelId = getlevel.Id;
-            await _unitOfWork.Student.Update(student);
+
+            await _unitOfWork.SaveChangesAsync();
 
             response.Message = "updated succesfully";
             response.Status = true;

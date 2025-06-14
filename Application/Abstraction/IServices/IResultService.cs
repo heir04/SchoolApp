@@ -11,8 +11,10 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<IEnumerable<StudentDto>>> GetStudentsByLevel(Guid levelId, Guid subjectId);
         Task<BaseResponse<ResultDto>> Delete(Guid resultId);
         Task<BaseResponse<ResultDto>> CheckResult();
-        Task<BaseResponse<ResultDto>> GiveRemark(Guid resultId, ResultDto resultDto);
+        Task<BaseResponse<GiveResultRemarkDto>> GiveRemark(Guid resultId, GiveResultRemarkDto remarkDto);
         Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResult(Guid subjectId);
         Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByLevel(Guid levelId);
+        Task<BaseResponse<ResultRemarkCountDto>> GetResultsRemarkCounts(Guid? levelId = null);
+        Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByCurrentUserId();
     }
 }

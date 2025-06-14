@@ -20,6 +20,7 @@ namespace SchoolApp.Infrastructure.Repositories
                 .Include(r => r.Student)
                 .Include(r => r.Session)
                 .Include(r => r.SubjectScores)
+                .ThenInclude(ss => ss.Subject)
                 .ToListAsync();
 
             return await result;
@@ -35,12 +36,12 @@ namespace SchoolApp.Infrastructure.Repositories
                 .Include(r => r.Term)
                 .Include(r => r.SubjectScores)
                 .ThenInclude(ss => ss.Subject)
-                .FirstOrDefaultAsync(expression);
+                .FirstOrDefaultAsync();
 
             return await result;
         }
         
-         public async Task<Result> GetResultSubjectScore(Expression<Func<Result, bool>> expression)
+        public async Task<Result> GetResultSubjectScore(Expression<Func<Result, bool>> expression)
         {
             var result = _context.Results
                 .Where(expression)

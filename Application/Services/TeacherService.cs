@@ -262,6 +262,14 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
+            var getUser = await _unitOfWork.User.Get(u => u.Id == teacher.UserId);
+            if (getUser == null)
+            {
+                response.Message = "User not found";
+                return response;
+            }
+            getUser.Email = teacherDto.Email;
+
             teacher.FirstName = teacherDto.FirstName ?? teacher.FirstName;
             teacher.LastName = teacherDto.LastName;
             teacher.Email = teacherDto.Email;
@@ -269,7 +277,8 @@ namespace SchoolApp.Application.Services
             teacher.PhoneNumber = teacherDto.PhoneNumber;
             teacher.Gender = teacherDto.Gender;
             teacher.Address = teacherDto.Address;
-            await _unitOfWork.Teacher.Update(teacher);
+
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
             return response;

@@ -257,7 +257,7 @@ namespace SchoolApp.Application.Services
                             CreatedBy = teacher.Id
                         };
 
-                        existingResult.SubjectScores.Add(subjectScore);
+                        _context.SubjectScores.Add(subjectScore);
 
                         studentResultStatuses.Add(new StudentResultStatusDto
                         {
@@ -300,6 +300,12 @@ namespace SchoolApp.Application.Services
             var currentSession = await _unitOfWork.Session.GetCurrentSession();
             var currentTerm = currentSession.Terms.FirstOrDefault(t => t.CurrentTerm == true);
             var students = await _unitOfWork.Student.GetAllStudents(s => s.LevelId == levelId);
+
+            if (currentSession is null || currentTerm is null)
+            {
+                response.Message = "Session or Term not set";
+                return response;
+            }
 
             if (!teacher.TeacherSubjects.Any(ts => ts.SubjectId == subjectId))
             {
@@ -429,6 +435,13 @@ namespace SchoolApp.Application.Services
             var checkStudent = await _unitOfWork.Student.Get(s => s.UserId == userId);
             var session = await _unitOfWork.Session.GetCurrentSession();
             var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+
+            if (session is null || term is null)
+            {
+                response.Message = "Session or Term not set";
+                return response;
+            }
+
             var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == session.Id && r.TermId == term.Id);
 
             if (result == null || result.Remark is null)
@@ -477,16 +490,19 @@ namespace SchoolApp.Application.Services
             response.Data = result.Select(
                 result => new ResultDto
                 {
+                    Id = result.Id,
                     StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
                     Level = result.Level?.LevelName,
                     TermName = result.Term?.Name,
+                    SessionName = result.Session?.SessionName,
+                    TotalScore = result.TermTotalScore,
                     Remark = result.Remark,
                     SubjectScores = [.. result.SubjectScores.Where(s => s.SubjectId == subjectId).Select(s => new SubjectScoreDto
                     {
                         SubjectName = s.Subject?.Name,
                         ContinuousAssessment = s.ContinuousAssessment,
                         ExamScore = s.ExamScore,
-                        TotalScore = s.ContinuousAssessment + s.ExamScore
+                        TotalScore = s.TotalScore
                     })]
                 }).ToList();
             response.Message = "Success";
@@ -510,16 +526,19 @@ namespace SchoolApp.Application.Services
             response.Data = result.Select(
                 result => new ResultDto
                 {
+                    Id = result.Id,
                     StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
                     Level = result.Level?.LevelName,
                     TermName = result.Term?.Name,
+                    SessionName = result.Session?.SessionName,
+                    TotalScore = result.TermTotalScore,
                     Remark = result.Remark,
                     SubjectScores = [.. result.SubjectScores.Select(s => new SubjectScoreDto
                     {
                         SubjectName = s.Subject?.Name,
                         ContinuousAssessment = s.ContinuousAssessment,
                         ExamScore = s.ExamScore,
-                        TotalScore = s.ContinuousAssessment + s.ExamScore
+                        TotalScore = s.TotalScore
                     })]
                 }).ToList();
             response.Message = "Success";
@@ -557,20 +576,104 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
-        public async Task<BaseResponse<ResultDto>> GiveRemark(Guid resultId, ResultDto resultDto)
+        public async Task<BaseResponse<GiveResultRemarkDto>> GiveRemark(Guid resultId, GiveResultRemarkDto remarkDto)
         {
-            var response = new BaseResponse<ResultDto>();
-            var result = await _unitOfWork.Result.Get(r => r.Id == resultId);
+            var response = new BaseResponse<GiveResultRemarkDto>();
+            var result = await _unitOfWork.Result.Get(r => r.Id == resultId && r.IsDeleted == false);
 
             if (result == null)
             {
                 response.Message = "Result not found";
                 return response;
             }
+            if (result.Remark != null)
+            {
+                response.Message = "Remark already added";
+                return response;
+            }
 
-            result.Remark = resultDto.Remark;
+            result.Remark = remarkDto.Remark;
 
             await _unitOfWork.SaveChangesAsync();
+            response.Message = "Success";
+            response.Status = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<ResultRemarkCountDto>> GetResultsRemarkCounts(Guid? levelId = null)
+        {
+            var response = new BaseResponse<ResultRemarkCountDto>();
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+
+            if (session == null || term == null)
+            {
+                response.Message = "Session or Term not set";
+                return response;
+            }
+
+            var query = _context.Results
+                .Where(r => r.SessionId == session.Id && r.TermId == term.Id && !r.IsDeleted);
+
+            if (levelId.HasValue)
+                query = query.Where(r => r.LevelId == levelId.Value);
+
+            var totalResults = await query.CountAsync();
+            var withRemark = await query.CountAsync(r => r.Remark != null);
+            var withoutRemark = await query.CountAsync(r => r.Remark == null);
+
+            response.Data = new ResultRemarkCountDto
+            {
+                TotalResult = totalResults,
+                WithRemark = withRemark,
+                WithoutRemark = withoutRemark
+            };
+            response.Status = true;
+            response.Message = "Success";
+            return response;
+        }
+
+        public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByCurrentUserId()
+        {
+            var response = new BaseResponse<IEnumerable<ResultDto>>();
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+
+            var checkStudent = await _unitOfWork.Student.Get(s => s.UserId == userId && !s.IsDeleted);
+            if (checkStudent == null)
+            {
+                response.Message = "Unauthorized access to this student's results";
+                return response;
+            }
+
+            var result = await _unitOfWork.Result.GetAllResult(r => r.StudentId == checkStudent.Id && !r.IsDeleted);
+            if (result is null || result.Count == 0)
+            {
+                response.Message = "No results found for this student";
+                return response;
+            }
+
+            response.Data = [.. result.Where(r => r.Remark != null).Select(result => new ResultDto
+            {
+                StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
+                Level = result.Level?.LevelName,
+                TermName = result.Term?.Name,
+                SessionName = result.Session?.SessionName,
+                TotalScore = result.TermTotalScore,
+                Remark = result.Remark,
+                SubjectScores = [.. result.SubjectScores.Select(s => new SubjectScoreDto
+                {
+                    SubjectName = s.Subject?.Name,
+                    ContinuousAssessment = s.ContinuousAssessment,
+                    ExamScore = s.ExamScore,
+                    TotalScore = s.TotalScore
+                })]
+            })];
+
             response.Message = "Success";
             response.Status = true;
             return response;

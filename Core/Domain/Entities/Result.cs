@@ -14,7 +14,6 @@ namespace SchoolApp.Core.Domain.Entities
         public Term? Term { get; set; } 
         public double TermTotalScore => SubjectScores.Sum(s =>
         s.TotalScore);
-        // public string Grade{ get; set; }
         public string? Remark {get;set;}
         public ICollection<SubjectScore> SubjectScores { get; set; } = new HashSet<SubjectScore>();
     }

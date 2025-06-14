@@ -11,7 +11,7 @@ namespace SchoolApp.Host.Controllers
     public class ResultController(IResultService resultService) : ControllerBase
     {
         private readonly IResultService _resultService = resultService;
-        
+
         [HttpPost("Register")]
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> Create([FromForm] ResultDto resultDto, Guid studentId)
@@ -30,12 +30,12 @@ namespace SchoolApp.Host.Controllers
 
         [HttpGet("Get/{id}")]
         [Authorize(Roles = "Admin, Teacher, Student")]
-        public async Task<IActionResult> Get([FromRoute]Guid id)
+        public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _resultService.Get(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
-        
+
         [HttpGet("CheckResult")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> CheckResult()
@@ -46,7 +46,7 @@ namespace SchoolApp.Host.Controllers
 
         [HttpGet("GetAll/{subjectId}")]
         [Authorize(Roles = "Admin, Teacher")]
-        public async Task<IActionResult> GetAllResult([FromRoute]Guid subjectId)
+        public async Task<IActionResult> GetAllResult([FromRoute] Guid subjectId)
         {
             var result = await _resultService.GetAllResult(subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
@@ -54,7 +54,7 @@ namespace SchoolApp.Host.Controllers
 
         [HttpGet("GetAllByLevel/{levelId}")]
         [Authorize(Roles = "Admin, Teacher")]
-        public async Task<IActionResult> GetAllResultByLevel([FromRoute]Guid levelId)
+        public async Task<IActionResult> GetAllResultByLevel([FromRoute] Guid levelId)
         {
             var result = await _resultService.GetAllResultByLevel(levelId);
             return result.Status ? Ok(result) : BadRequest(result);
@@ -62,15 +62,15 @@ namespace SchoolApp.Host.Controllers
 
         [HttpGet("GetStudentsByLevel/{levelId}/{subjectId}")]
         [Authorize(Roles = "Admin, Teacher")]
-        public async Task<IActionResult> GetStudentByLevel([FromRoute]Guid levelId,[FromRoute] Guid subjectId)
+        public async Task<IActionResult> GetStudentByLevel([FromRoute] Guid levelId, [FromRoute] Guid subjectId)
         {
             var result = await _resultService.GetStudentsByLevel(levelId, subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
         }
-        
+
         [HttpPut("Update/{id}")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> Update([FromRoute]Guid id, Guid subjectId, ResultDto resultDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, Guid subjectId, ResultDto resultDto)
         {
             var result = await _resultService.Update(resultDto, id, subjectId);
             return result.Status ? Ok(result) : BadRequest(result);
@@ -78,17 +78,33 @@ namespace SchoolApp.Host.Controllers
 
         [HttpPut("GiveRemark/{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GiveRemark([FromRoute]Guid id, ResultDto resultDto)
+        public async Task<IActionResult> GiveRemark([FromRoute] Guid id, GiveResultRemarkDto remarkDto)
         {
-            var result = await _resultService.GiveRemark(id, resultDto);
+            var result = await _resultService.GiveRemark(id, remarkDto);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost("Delete/{id}")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> Delete([FromRoute]Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _resultService.Delete(id);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("GetResultsRemarkCounts/{levelId?}")]
+        [Authorize(Roles = "Admin, Teacher")]
+        public async Task<IActionResult> GetRemarkCounts([FromRoute] Guid? levelId = null)
+        {
+            var result = await _resultService.GetResultsRemarkCounts(levelId);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("GetAllByCurrentUser")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetAllByCurrentUser()
+        {
+            var result = await _resultService.GetAllResultByCurrentUserId();
             return result.Status ? Ok(result) : BadRequest(result);
         }
     }
