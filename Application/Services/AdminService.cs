@@ -10,12 +10,10 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SchoolApp.Application.Services
 {
-    public class AdminService(ApplicationContext context, IAdminRepository adminRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IAdminService
+    public class AdminService(ApplicationContext context, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IAdminService
     {
         private readonly ApplicationContext _context = context;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IAdminRepository _adminRepository = adminRepository;
-        private readonly IUserRepository _userRepository = userRepository;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<AdminDto>> Delete(Guid id)
@@ -27,14 +25,14 @@ namespace SchoolApp.Application.Services
                 response.Message = "Admin not found";
                 return response;
             }
-            var admin = await _adminRepository.Get(a => a.Id == id);
+            var admin = await _unitOfWork.Admin.Get(a => a.Id == id);
             if (admin == null)
             {
                 response.Message = "Admin not found";
                 return response;
             }
             admin.IsDeleted = true;
-            await _unitOfWork.Admin.Update(admin);
+            await _unitOfWork.Admin.SaveChangesAsync();
         
             response.Message = "Admin Deleted";
             response.Status = true;
@@ -51,7 +49,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var admin = await _adminRepository.Get(a => a.Id == id);
+            var admin = await _unitOfWork.Admin.Get(a => a.Id == id);
             if(admin == null )
             {
                 response.Message = "admin not found";
@@ -84,7 +82,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "admin not found";
                 return response;
             }
-            var admin = await _adminRepository.Get(a => a.Email == email);
+            var admin = await _unitOfWork.Admin.Get(a => a.Email == email);
             if (admin == null)
             {
                 response.Message = "admin gotten";
@@ -118,7 +116,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "admin not found";
                 return response;
             }
-            var admin = await _adminRepository.Get(a => a.UserId == userId);
+            var admin = await _unitOfWork.Admin.Get(a => a.UserId == userId);
             if (admin == null)
             {
                 response.Message = "admin gotten";
@@ -146,7 +144,7 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<AdminDto>>> GetAll()
         {
             var response = new BaseResponse<IEnumerable<AdminDto>>();
-            var admins = await _adminRepository.GetAll();
+            var admins = await _unitOfWork.Admin.GetAll();
             if (admins == null)
             {   
                 response.Message = "admins not found";
@@ -227,25 +225,12 @@ namespace SchoolApp.Application.Services
                 CreatedOn = DateTime.Today
             };
 
-            // var addadmin = await _unitOfWork.Admin.Register(admin);
             await _unitOfWork.Admin.Register(admin);
-            await _userRepository.Register(user);
+            await _unitOfWork.User.Register(user);
             await _unitOfWork.SaveChangesAsync();
             // admin.CreatedBy = addadmin.Id;
             // admin.LastModifiedBy = addadmin.Id;
-            // admin.IsDeleted = false;
 
-            // var adminDTO = new AdminDto
-            // {
-            //     Id = admin.Id,
-            //     Email = adminDto.Email,
-            //     Password = adminDto.Password,
-            //     FirstName = adminDto.FirstName,
-            //     LastName = adminDto.LastName,
-            // };
-
-             
-            // response.Data = adminDTO;
             response.Message = "Admin registered succesfuly";
             response.Status = true;
             return response;
@@ -255,22 +240,21 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<AdminDto>();
             
-            var adminExist = await _adminRepository.ExistsAsync(a => a.Id == id && a.IsDeleted == false);
+            var adminExist = await _unitOfWork.Admin.ExistsAsync(a => a.Id == id && a.IsDeleted == false);
             if (!adminExist)
             {
                response.Message = "admin not found";
                return response;
             }
-            var admin = await _adminRepository.Get(a => a.Id == id);
+            var admin = await _unitOfWork.Admin.Get(a => a.Id == id);
             
-            var getUser = await _userRepository.Get(u => u.Id == admin.UserId);
+            var getUser = await _unitOfWork.Admin.Get(u => u.Id == admin.UserId);
             if (getUser == null)
             {
                 response.Message = "User not found";
                 return response;
             }
             getUser.Email = adminDto.Email;
-            await _userRepository.Update(getUser);
 
             admin.FirstName = adminDto.FirstName ?? admin.FirstName;
             admin.LastName = adminDto.LastName ?? admin.LastName;
@@ -280,9 +264,9 @@ namespace SchoolApp.Application.Services
             admin.Address = adminDto.Address ?? admin.Address;
             admin.LastModifiedBy = admin.Id;
             admin.LastModifiedOn = DateTime.UtcNow;
-            await _adminRepository.Update(admin);
 
-           
+            await _unitOfWork.SaveChangesAsync();
+
             response.Message = "Admin updated succesfully";
             response.Status = true;
             return response;

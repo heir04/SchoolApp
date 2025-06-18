@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
@@ -6,9 +7,10 @@ using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
-    public class UserService(IUnitOfWork unitOfWork) : IUserService
+    public class UserService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<BaseResponse<UserDto>> Delete(Guid id)
         {
@@ -76,19 +78,12 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<UserDto>();
             var user = await _unitOfWork.User.GetUser(x => x.Email == userDto.Email.ToLower());
 
-            // if (user is null || !BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
-            // {
-            //     response.Message = "Incorrect email or password!";
-            //     return response;
-            // }
-
-            string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
-
             if (user is null || user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
             {
                 response.Message = $"Incorrect email or password!";
                 return response;
             }
+            string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
 
             var userRole = user.UserRoles.FirstOrDefault();
             if (userRole == null)
@@ -108,27 +103,34 @@ namespace SchoolApp.Application.Services
             return response;
         }
         
-        public async Task<BaseResponse<UserDto>> UpdatePassword(UserDto userDto, Guid id)
+        public async Task<BaseResponse<UserDto>> UpdatePassword(UserDto userDto)
         {
             var response = new BaseResponse<UserDto>();
 
-            var userExist = await _unitOfWork.User.ExistsAsync(u => u.Id == id);
-            if (!userExist)
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                response.Message = "Invalid user ID";
+                return response;
+            }
+
+            var user = await _unitOfWork.User.Get(u => u.Id == userId && !u.IsDeleted);
+            if (user == null)
             {
                 response.Message = "User not found";
                 return response;
             }
+            
+
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(userDto.Password, saltString);
-    
-            var user = await _unitOfWork.User.Get(u => u.Id == id);
             user.HashSalt = saltString;
             user.PasswordHash = hashedPassword;
             user.LastModifiedBy = user.Id;
             user.LastModifiedBy = user.Id;
             
-            await _unitOfWork.User.Update(user);
-            response.Message = "Success";
+            await _unitOfWork.SaveChangesAsync();
+            response.Message = "Password Updated";
             response.Status = true;
             return response;
         }

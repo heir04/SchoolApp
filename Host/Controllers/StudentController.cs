@@ -60,7 +60,7 @@ namespace SchoolApp.Host.Controllers
         }        
 
         [HttpGet("GetAll/{levelId}")]
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize(Roles = "Admin,Teacher,Student")]
         public async Task<IActionResult> GetAll(Guid levelId)
         {
             var result = await _studentService.GetAll(levelId);

@@ -299,7 +299,7 @@ namespace SchoolApp.Application.Services
             var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
             var currentSession = await _unitOfWork.Session.GetCurrentSession();
             var currentTerm = currentSession.Terms.FirstOrDefault(t => t.CurrentTerm == true);
-            var students = await _unitOfWork.Student.GetAllStudents(s => s.LevelId == levelId);
+            var students = await _unitOfWork.Student.GetAllStudents(s => s.LevelId == levelId && !s.IsDeleted);
 
             if (currentSession is null || currentTerm is null)
             {
@@ -381,7 +381,8 @@ namespace SchoolApp.Application.Services
             result.IsDeleted = true;
             result.IsDeleteBy = userId;
             result.IsDeleteOn = DateTime.UtcNow;
-            await _unitOfWork.Result.Update(result);
+
+            await _unitOfWork.Result.SaveChangesAsync();
             response.Message = "Deleted Successfully";
             response.Status = true;
             return response;
@@ -392,7 +393,7 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<ResultDto>();
 
             var selectSession = await _unitOfWork.Session.Get(s => s.CurrentSession == true);
-            var result = await _unitOfWork.Result.GetResult(r => r.Id == id && r.SessionId == selectSession.Id);
+            var result = await _unitOfWork.Result.GetResult(r => r.Id == id && r.SessionId == selectSession.Id && !r.IsDeleted);
 
             if (result == null)
             {
@@ -442,7 +443,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == session.Id && r.TermId == term.Id);
+            var result = await _unitOfWork.Result.GetResult(r => r.StudentId == checkStudent.Id && r.SessionId == session.Id && r.TermId == term.Id && !r.IsDeleted);
 
             if (result == null || result.Remark is null)
             {
@@ -479,8 +480,13 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<IEnumerable<ResultDto>>();
             var session = await _unitOfWork.Session.GetCurrentSession();
             var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
-            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id && r.SubjectScores.Any(s => s.SubjectId == subjectId));
+            if (session is null || term is null)
+            {
+                response.Message = "No session or term set";
+                return response;
+            }
 
+            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id && !r.IsDeleted && r.SubjectScores.Any(s => s.SubjectId == subjectId));
             if (result is null)
             {
                 response.Message = "Result is not available currently";
@@ -515,7 +521,13 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<IEnumerable<ResultDto>>();
             var session = await _unitOfWork.Session.GetCurrentSession();
             var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
-            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id  && r.LevelId == levelId);
+            if (session is null || term is null)
+            {
+                response.Message = "No session or term set";
+                return response;
+            }
+
+            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id  && r.LevelId == levelId && !r.IsDeleted);
 
             if (result is null)
             {
@@ -643,14 +655,14 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var checkStudent = await _unitOfWork.Student.Get(s => s.UserId == userId && !s.IsDeleted);
-            if (checkStudent == null)
+            var getStudent = await _unitOfWork.Student.Get(s => s.UserId == userId && !s.IsDeleted);
+            if (getStudent == null)
             {
                 response.Message = "Unauthorized access to this student's results";
                 return response;
             }
 
-            var result = await _unitOfWork.Result.GetAllResult(r => r.StudentId == checkStudent.Id && !r.IsDeleted);
+            var result = await _unitOfWork.Result.GetAllResult(r => r.StudentId == getStudent.Id && !r.IsDeleted);
             if (result is null || result.Count == 0)
             {
                 response.Message = "No results found for this student";

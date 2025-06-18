@@ -35,11 +35,16 @@ namespace SchoolApp.Host.Controllers
             return Unauthorized(response.Message);
         }
 
+        [HttpPut("UpdatePassword")]
+        public async Task<IActionResult> UpdatePassword(UserDto userDto)
+        {
+            var response = await _userService.UpdatePassword(userDto);
+            return response.Status ? Ok(response) : BadRequest(response);
+        }
+
         [HttpPost("Logout")]
         public IActionResult Logout()
         {
-            // For client-side logout, you can simply return a success response
-            // The client should handle the removal of the token from storage
             return Ok(new { Message = "Logged out successfully" });
         }
 

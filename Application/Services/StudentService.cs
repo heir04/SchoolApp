@@ -144,6 +144,7 @@ namespace SchoolApp.Application.Services
                 LastName = student.LastName,
                 Email = student.Email,
                 StudentId = student.StudentId,
+                LevelId = student.LevelId,
                 LevelName = student.Level?.LevelName,
                 DateOfBirth = student.DateOfBirth,
                 PhoneNumber = student.PhoneNumber,

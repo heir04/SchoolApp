@@ -25,7 +25,6 @@ namespace SchoolApp.Application.Services
             var newsubject = new Subject
             {
                 Name = subjectDto.Name,
-                CreatedOn = DateTime.Today
             };
             await _unitOfWork.Subject.Register(newsubject);
             await _unitOfWork.SaveChangesAsync();

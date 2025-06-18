@@ -278,6 +278,31 @@ namespace SchoolApp.Application.Services
             teacher.Gender = teacherDto.Gender;
             teacher.Address = teacherDto.Address;
 
+        //     var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
+
+        //    var teacherSubjects = new HashSet<TeacherSubject>();
+        //    foreach (var subject in subjects)
+        //    {
+        //         var ifExists = await _context.TeacherSubjects.AnyAsync(ts => ts.SubjectId == subject.Id && !ts.IsDeleted);
+        //         if (ifExists)
+        //         {
+        //             response.Message = "subject already assigned to a teacher";
+        //             return response;
+        //         }
+
+        //         var teacherSubject = new TeacherSubject
+        //         {
+        //             TeacherId = teacherDto.Id,
+        //             SubjectId = subject.Id,
+        //             Teacher = teacher,
+        //             Subject = subject
+        //         };
+                
+        //         teacherSubjects.Add(teacherSubject);
+        //    }
+
+        //    teacher.TeacherSubjects = teacherSubjects;
+
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
