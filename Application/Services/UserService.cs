@@ -78,12 +78,18 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<UserDto>();
             var user = await _unitOfWork.User.GetUser(x => x.Email == userDto.Email.ToLower());
 
-            if (user is null || user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
+            if (user is null)
             {
                 response.Message = $"Incorrect email or password!";
                 return response;
             }
+
             string hashedPassword = HashingHelper.HashPassword(userDto.Password, user.HashSalt);
+            if (user.PasswordHash == null || !user.PasswordHash.Equals(hashedPassword))
+            {
+                response.Message = $"Incorrect email or password!";
+                return response;
+            }
 
             var userRole = user.UserRoles.FirstOrDefault();
             if (userRole == null)
@@ -103,7 +109,7 @@ namespace SchoolApp.Application.Services
             return response;
         }
         
-        public async Task<BaseResponse<UserDto>> UpdatePassword(UserDto userDto)
+        public async Task<BaseResponse<UserDto>> UpdatePassword(UpdateUserPasswordDto userDto)
         {
             var response = new BaseResponse<UserDto>();
 
@@ -120,10 +126,15 @@ namespace SchoolApp.Application.Services
                 response.Message = "User not found";
                 return response;
             }
+            string hashedCurrentPassword = HashingHelper.HashPassword(userDto.CurrentPassword, user.HashSalt);
+            if (user.PasswordHash == null || !user.PasswordHash.Equals(hashedCurrentPassword))
+            {
+                response.Message = "Current password is incorrect";
+                return response;
+            }
             
-
             string saltString = HashingHelper.GenerateSalt();
-            string hashedPassword = HashingHelper.HashPassword(userDto.Password, saltString);
+            string hashedPassword = HashingHelper.HashPassword(userDto.NewPassword, saltString);
             user.HashSalt = saltString;
             user.PasswordHash = hashedPassword;
             user.LastModifiedBy = user.Id;

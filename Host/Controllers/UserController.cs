@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
@@ -36,7 +37,8 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("UpdatePassword")]
-        public async Task<IActionResult> UpdatePassword(UserDto userDto)
+        [Authorize]
+        public async Task<IActionResult> UpdatePassword(UpdateUserPasswordDto userDto)
         {
             var response = await _userService.UpdatePassword(userDto);
             return response.Status ? Ok(response) : BadRequest(response);
