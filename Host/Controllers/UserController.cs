@@ -28,10 +28,11 @@ namespace SchoolApp.Host.Controllers
 
             if (response.Data != null)
             {
-                    var token = _jwtHelper.GenerateToken(response.Data.Email, response.Data.RoleName, response.Data.Id);
-                    return  Ok(new{
+                var token = _jwtHelper.GenerateToken(response.Data.Email, response.Data.RoleName, response.Data.Id);
+                return Ok(new
+                {
                     Token = token
-                    });
+                });
             }
             return Unauthorized(response.Message);
         }

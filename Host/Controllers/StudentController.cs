@@ -75,6 +75,14 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("Count")]
+        [Authorize(Roles = "Admin,Teacher")]
+        public async Task<IActionResult> Count()
+        {
+            var result = await _studentService.Count();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpPost("Delete/{id}")]
         [Authorize(Roles = "Admin,Teacher")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)

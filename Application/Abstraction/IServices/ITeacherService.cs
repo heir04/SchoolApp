@@ -11,5 +11,6 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<TeacherDto>> Get(Guid id);
         Task<BaseResponse<TeacherDto>> Get(string email);
         Task<BaseResponse<IEnumerable<TeacherDto>>> GetAll();
+        Task<BaseResponse<DataCountDto>> Count();
     }
 }

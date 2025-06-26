@@ -48,7 +48,6 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
-        
         [Authorize(Roles ="Admin")]
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> Update([FromRoute]Guid id, SubjectDto subjectDto)

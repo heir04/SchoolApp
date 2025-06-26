@@ -9,6 +9,7 @@ namespace SchoolApp.Application.Abstraction.IRepositories
         Task<T> Update(T entity);
         Task<T> GetAsync(Guid id);
         // T Get(Guid id);
+        Task<int> Count(Expression<Func<T, bool>> expression);
         Task<T> Get(Expression<Func<T, bool>> expression);
         Task<IList<T>> GetAll();
         Task<List<T>> GetAllByIdsAsync(List<Guid> ids);

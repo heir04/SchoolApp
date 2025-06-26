@@ -28,7 +28,7 @@ namespace SchoolApp.Application.Services
             var student = await _unitOfWork.Student.Get(a => a.Id == id);
             if (student == null)
             {
-                
+
                 response.Message = "not found or is already deleted";
                 response.Status = false;
                 return response;
@@ -43,7 +43,7 @@ namespace SchoolApp.Application.Services
 
         public async Task<BaseResponse<StudentDto>> Get(Guid id)
         {
-            var response =  new BaseResponse<StudentDto>();
+            var response = new BaseResponse<StudentDto>();
             var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Id == id && s.IsDeleted == false);
             if (!studentExist)
             {
@@ -72,7 +72,7 @@ namespace SchoolApp.Application.Services
                 Address = student.Address,
                 CreatedOn = student.CreatedOn
             };
-           
+
             response.Data = studentDto;
             response.Message = "getStudent gotten";
             response.Status = true;
@@ -89,14 +89,14 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var student = await _unitOfWork.Student.GetStudent(s =>s.Email == email && !s.IsDeleted);
+            var student = await _unitOfWork.Student.GetStudent(s => s.Email == email && !s.IsDeleted);
             if (student == null)
             {
                 response.Message = "not found";
                 response.Status = false;
                 return response;
             }
-            
+
             var studentDto = new StudentDto
             {
                 Id = student.Id,
@@ -106,7 +106,7 @@ namespace SchoolApp.Application.Services
                 StudentId = student.StudentId,
                 LevelName = student.Level?.LevelName,
             };
-            
+
             response.Data = studentDto;
             response.Message = "getStudent gotten";
             response.Status = true;
@@ -136,7 +136,7 @@ namespace SchoolApp.Application.Services
                 response.Status = false;
                 return response;
             }
-            
+
             var studentDto = new StudentDto
             {
                 Id = student.Id,
@@ -152,7 +152,7 @@ namespace SchoolApp.Application.Services
                 Address = student.Address,
                 CreatedOn = student.CreatedOn
             };
-            
+
             response.Data = studentDto;
             response.Message = "getStudent gotten";
             response.Status = true;
@@ -187,11 +187,11 @@ namespace SchoolApp.Application.Services
                 Address = s.Address,
                 CreatedOn = s.CreatedOn
             }).ToList();
-            
+
             response.Message = "list of students";
             response.Status = true;
             response.Data = studentDtos;
-            return response;  
+            return response;
         }
 
         public async Task<BaseResponse<IEnumerable<StudentDto>>> GetAll(Guid levelId)
@@ -238,11 +238,11 @@ namespace SchoolApp.Application.Services
                 response.Message = "Not found";
                 return response;
             }
-            
+
             var student = await _unitOfWork.Student.Get(s => s.StudentId == studentId);
             if (student == null)
             {
-               
+
                 response.Message = "not found";
                 response.Status = false;
             }
@@ -259,7 +259,7 @@ namespace SchoolApp.Application.Services
                 Address = student.Address,
                 CreatedOn = student.CreatedOn
             };
-           
+
             response.Data = studentDto;
             response.Message = "getStudent gotten";
             response.Status = true;
@@ -311,7 +311,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "level not found";
                 return response;
             }
-            
+
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
 
             var student = new Student
@@ -333,7 +333,7 @@ namespace SchoolApp.Application.Services
             var addStudent = await _unitOfWork.Student.Register(student);
             await _unitOfWork.User.Register(user);
             await _unitOfWork.SaveChangesAsync();
-          
+
             response.Message = "Student registered succesfully";
             response.Status = true;
             return response;
@@ -352,17 +352,16 @@ namespace SchoolApp.Application.Services
             if (student == null)
             {
                 response.Message = "not found";
-                response.Status = false;
+                return response;
             }
 
             var getUser = await _unitOfWork.User.Get(u => u.Id == student.UserId);
             if (getUser == null)
             {
                 response.Message = "User not found";
-                response.Status = false;
+                return response;
             }
             getUser.Email = studentDto.Email;
-            // await _unitOfWork.User.Update(getUser);
 
             var getlevel = await _unitOfWork.Level.Get(l => l.LevelName == studentDto.LevelName);
             if (getlevel == null)
@@ -385,6 +384,22 @@ namespace SchoolApp.Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             response.Message = "updated succesfully";
+            response.Status = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<DataCountDto>> Count()
+        {
+            var response = new BaseResponse<DataCountDto>();
+            var studentCount = await _unitOfWork.Student.Count(s => !s.IsDeleted);
+
+            var dataCount = new DataCountDto
+            {
+                Count = studentCount
+            };
+
+            response.Data = dataCount;
+            response.Message = "Success";
             response.Status = true;
             return response;
         }

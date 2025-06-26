@@ -248,7 +248,7 @@ namespace SchoolApp.Application.Services
             }
             var admin = await _unitOfWork.Admin.Get(a => a.Id == id);
             
-            var getUser = await _unitOfWork.Admin.Get(u => u.Id == admin.UserId);
+            var getUser = await _unitOfWork.User.Get(u => u.Id == admin.UserId);
             if (getUser == null)
             {
                 response.Message = "User not found";

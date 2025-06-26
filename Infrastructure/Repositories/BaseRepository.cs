@@ -46,6 +46,11 @@ namespace SchoolApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<int> Count(Expression<Func<T, bool>> expression)
+        {
+            return await _context.Set<T>().CountAsync(expression);
+        }
+
         public async Task<bool> ExistsAsync(Expression<Func<T, bool>> expression)
         {
             return await _context.Set<T>().AnyAsync(expression);

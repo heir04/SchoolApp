@@ -245,6 +245,22 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
+        public async Task<BaseResponse<DataCountDto>> Count()
+        {
+            var response = new BaseResponse<DataCountDto>();
+
+            var teacherCount = await _unitOfWork.Teacher.Count(t => !t.IsDeleted);
+
+            var dataCount = new DataCountDto
+            {
+                Count = teacherCount
+            };
+
+            response.Data = dataCount;
+            response.Message = "Success";
+            response.Status = true;
+            return response;
+        }
         public async Task<BaseResponse<TeacherDto>> Update(TeacherDto teacherDto, Guid id)
         {
             var response = new BaseResponse<TeacherDto>();
@@ -278,30 +294,30 @@ namespace SchoolApp.Application.Services
             teacher.Gender = teacherDto.Gender;
             teacher.Address = teacherDto.Address;
 
-        //     var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
+            //     var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
 
-        //    var teacherSubjects = new HashSet<TeacherSubject>();
-        //    foreach (var subject in subjects)
-        //    {
-        //         var ifExists = await _context.TeacherSubjects.AnyAsync(ts => ts.SubjectId == subject.Id && !ts.IsDeleted);
-        //         if (ifExists)
-        //         {
-        //             response.Message = "subject already assigned to a teacher";
-        //             return response;
-        //         }
+            //    var teacherSubjects = new HashSet<TeacherSubject>();
+            //    foreach (var subject in subjects)
+            //    {
+            //         var ifExists = await _context.TeacherSubjects.AnyAsync(ts => ts.SubjectId == subject.Id && !ts.IsDeleted);
+            //         if (ifExists)
+            //         {
+            //             response.Message = "subject already assigned to a teacher";
+            //             return response;
+            //         }
 
-        //         var teacherSubject = new TeacherSubject
-        //         {
-        //             TeacherId = teacherDto.Id,
-        //             SubjectId = subject.Id,
-        //             Teacher = teacher,
-        //             Subject = subject
-        //         };
-                
-        //         teacherSubjects.Add(teacherSubject);
-        //    }
+            //         var teacherSubject = new TeacherSubject
+            //         {
+            //             TeacherId = teacherDto.Id,
+            //             SubjectId = subject.Id,
+            //             Teacher = teacher,
+            //             Subject = subject
+            //         };
 
-        //    teacher.TeacherSubjects = teacherSubjects;
+            //         teacherSubjects.Add(teacherSubject);
+            //    }
+
+            //    teacher.TeacherSubjects = teacherSubjects;
 
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";

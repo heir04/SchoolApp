@@ -52,6 +52,14 @@ namespace SchoolApp.Host.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("Count")]
+        public async Task<IActionResult> Count()
+        {
+            var result = await _teacherService.Count();
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> Update([FromRoute]Guid id, TeacherDto teacherDto)
         {

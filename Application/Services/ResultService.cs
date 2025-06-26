@@ -431,7 +431,7 @@ namespace SchoolApp.Application.Services
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
             {
                 response.Message = "Invalid user ID";
-                 return response;
+                return response;
             }
             var checkStudent = await _unitOfWork.Student.Get(s => s.UserId == userId);
             var session = await _unitOfWork.Session.GetCurrentSession();
@@ -448,6 +448,7 @@ namespace SchoolApp.Application.Services
             if (result == null || result.Remark is null)
             {
                 response.Message = "Result not released yet";
+                response.Status = true;
                 return response;
             }
 

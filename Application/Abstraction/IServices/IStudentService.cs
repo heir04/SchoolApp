@@ -13,5 +13,6 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<StudentDto>> GetByStudentId(string studentId);
         Task<BaseResponse<IEnumerable<StudentDto>>> GetAll();
         Task<BaseResponse<IEnumerable<StudentDto>>> GetAll(Guid levelId);
+        Task<BaseResponse<DataCountDto>> Count();
     }
 }

@@ -109,9 +109,9 @@ namespace SchoolApp.Application.Services
             return response;
         }
         
-        public async Task<BaseResponse<UserDto>> UpdatePassword(UpdateUserPasswordDto userDto)
+        public async Task<BaseResponse<UpdateUserPasswordDto>> UpdatePassword(UpdateUserPasswordDto userDto)
         {
-            var response = new BaseResponse<UserDto>();
+            var response = new BaseResponse<UpdateUserPasswordDto>();
 
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
