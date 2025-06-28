@@ -65,7 +65,7 @@ public static class DbInitializer
         {
             Id = Guid.NewGuid(),
             UserName = "SuperAdmin",
-            Email = "superadmin@gmail.com",
+            Email = "superadmin@school.com",
             HashSalt = saltString,
             PasswordHash = hashedPassword,
             CreatedOn = DateTime.UtcNow
