@@ -70,7 +70,7 @@ namespace SchoolApp.Application.Services
                 Address = teacherDto.Address
             };
             
-           var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
+           var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds ?? new List<Guid>());
 
            var teacherSubjects = new HashSet<TeacherSubject>();
            foreach (var subject in subjects)
@@ -294,30 +294,53 @@ namespace SchoolApp.Application.Services
             teacher.Gender = teacherDto.Gender;
             teacher.Address = teacherDto.Address;
 
-            //     var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
+            if (teacherDto.SubjectIds != null && teacherDto.SubjectIds.Any())
+            {
+                var teacherWithSubjects = await _unitOfWork.Teacher.GetTeacher(t => t.Id == id);
+                if (teacherWithSubjects != null)
+                {
+                    var existingTeacherSubjects = teacherWithSubjects.TeacherSubjects.ToList();
+                    foreach (var existingTs in existingTeacherSubjects)
+                    {
+                        existingTs.IsDeleted = true;
+                    }
+                }
 
-            //    var teacherSubjects = new HashSet<TeacherSubject>();
-            //    foreach (var subject in subjects)
-            //    {
-            //         var ifExists = await _context.TeacherSubjects.AnyAsync(ts => ts.SubjectId == subject.Id && !ts.IsDeleted);
-            //         if (ifExists)
-            //         {
-            //             response.Message = "subject already assigned to a teacher";
-            //             return response;
-            //         }
+                var subjects = await _unitOfWork.Subject.GetAllByIdsAsync(teacherDto.SubjectIds);
+                if (subjects.Count != teacherDto.SubjectIds.Count)
+                {
+                    response.Message = "One or more subjects not found";
+                    return response;
+                }
 
-            //         var teacherSubject = new TeacherSubject
-            //         {
-            //             TeacherId = teacherDto.Id,
-            //             SubjectId = subject.Id,
-            //             Teacher = teacher,
-            //             Subject = subject
-            //         };
+                foreach (var subject in subjects)
+                {
+                    var ifExists = await _context.TeacherSubjects.AnyAsync(ts => 
+                        ts.SubjectId == subject.Id && 
+                        ts.TeacherId != id && 
+                        !ts.IsDeleted);
+                    if (ifExists)
+                    {
+                        response.Message = $"Subject '{subject.Name ?? "Unknown"}' is already assigned to another teacher";
+                        return response;
+                    }
+                }
 
-            //         teacherSubjects.Add(teacherSubject);
-            //    }
+                var newTeacherSubjects = new List<TeacherSubject>();
+                foreach (var subject in subjects)
+                {
+                    var teacherSubject = new TeacherSubject
+                    {
+                        TeacherId = id,
+                        SubjectId = subject.Id,
+                        Teacher = teacher,
+                        Subject = subject
+                    };
+                    newTeacherSubjects.Add(teacherSubject);
+                }
 
-            //    teacher.TeacherSubjects = teacherSubjects;
+                _context.TeacherSubjects.AddRange(newTeacherSubjects);
+            }
 
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
@@ -350,7 +373,6 @@ namespace SchoolApp.Application.Services
             }
 
             teacher.IsDeleted = true;
-            // await _unitOfWork.Teacher.Update(teacher);
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Deleted Successfully";
             response.Status = true;

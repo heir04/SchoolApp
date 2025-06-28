@@ -2,15 +2,17 @@ using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
-using System.Security.Claims;
+using SchoolApp.Core.Helper;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolApp.Application.Services
 {
-    public class SubjectService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : ISubjectService
+    public class SubjectService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, ValidatorHelper validator) : ISubjectService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly ValidatorHelper _validator = validator;
 
         public async Task<BaseResponse<SubjectDto>> Create(SubjectDto subjectDto)
         {
@@ -22,9 +24,17 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
+            var ValidateCategory = _validator.ValidateCategory(subjectDto.Category);
+            if (!ValidateCategory)
+            {
+                response.Message = "Invalid Category";
+                return response;
+            }
+
             var newsubject = new Subject
             {
                 Name = subjectDto.Name,
+                Category = subjectDto.Category
             };
             await _unitOfWork.Subject.Register(newsubject);
             await _unitOfWork.SaveChangesAsync();
@@ -84,7 +94,8 @@ namespace SchoolApp.Application.Services
             var subjectDto = new SubjectDto
             {
                 Id = subject.Id,
-                Name = subject.Name
+                Name = subject.Name,
+                Category = subject.Category
             };
 
             response.Data = subjectDto;
@@ -106,9 +117,11 @@ namespace SchoolApp.Application.Services
 
             var subjectDtos = subjects
             .Where(s => s.IsDeleted == false)
-            .Select(s => new SubjectDto{
+            .Select(s => new SubjectDto
+            {
                 Id = s.Id,
-                Name = s.Name
+                Name = s.Name,
+                Category = s.Category
             }).ToList();
 
             response.Data = subjectDtos;
@@ -134,8 +147,16 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
+            var ValidateCategory = _validator.ValidateCategory(subjectDto.Category);
+            if (!ValidateCategory)
+            {
+                response.Message = "Invalid Category";
+                return response;
+            }
+
             subject.Name = subjectDto.Name;
-            await _unitOfWork.Subject.Update(subject);
+            subject.Category = subjectDto.Category;
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
             return response;

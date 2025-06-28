@@ -11,7 +11,7 @@ namespace SchoolApp.Host.Controllers
     {
         private readonly ITeacherService _teacherService = teacherService;
         
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] TeacherDto teacherDto)
         {
@@ -19,7 +19,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
      
-        [Authorize(Roles = "Admin")]   
+        [Authorize(Roles = "SuperAdmin,Admin")]   
         [HttpGet("Get/{id}")]
         public async Task<IActionResult> Get([FromRoute]Guid id)
         {
@@ -27,7 +27,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpGet("Get")]
         public async Task<IActionResult> Get(string email)
         {
@@ -43,7 +43,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
@@ -51,7 +51,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpGet("Count")]
         public async Task<IActionResult> Count()
         {
@@ -59,7 +59,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> Update([FromRoute]Guid id, TeacherDto teacherDto)
         {
@@ -67,7 +67,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpPost("Delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute]Guid id)
         {

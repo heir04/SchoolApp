@@ -6,14 +6,16 @@ using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
 using SchoolApp.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
-    public class ResultService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, ApplicationContext context) : IResultService
+    public class ResultService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, ApplicationContext context, ValidatorHelper validator) : IResultService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
         private readonly ApplicationContext _context = context;
+        private readonly ValidatorHelper _validator = validator;
 
         public async Task<BaseResponse<ResultDto>> Create(ResultDto resultDto, Guid studentId)
         {
@@ -139,7 +141,7 @@ namespace SchoolApp.Application.Services
             var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
             var session = await _unitOfWork.Session.GetCurrentSession();
             var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
-            
+
             if (bulkResultDto.SubjectId == Guid.Empty)
             {
                 response.Message = "subjectId is empty";
@@ -153,11 +155,13 @@ namespace SchoolApp.Application.Services
                 response.Message = "Teacher not found";
                 return response;
             }
+
             if (session is null || term is null)
             {
                 response.Message = "No session or term is currently set on the system. Please try again later.";
                 return response;
             }
+
             if (subject is null)
             {
                 response.Message = "Subject not found";
@@ -186,6 +190,17 @@ namespace SchoolApp.Application.Services
 
                 var resultExists = await _unitOfWork.Result.ExistsAsync(r =>
                     r.SessionId == session.Id && r.StudentId == student.Id && r.LevelId == bulkResultDto.LevelId && r.TermId == term.Id);
+                    
+                if (subject.Category != student.Level.Category && subject.Category != "Both")
+                {
+                    studentResultStatuses.Add(new StudentResultStatusDto
+                    {
+                        StudentName = $"{student.FirstName} {student.LastName}",
+                        Status = "Failed",
+                        Message = "Subject category does not match student level category."
+                    });
+                    continue;
+                }
 
                 try
                 {
@@ -216,6 +231,19 @@ namespace SchoolApp.Application.Services
                             CreatedBy = teacher.Id
                         };
 
+                        var scoreValidate = _validator.ValidateScores(studentScore.ExamScore, studentScore.ContinuousAssessment);
+
+                        if (!scoreValidate)
+                        {
+                            studentResultStatuses.Add(new StudentResultStatusDto
+                            {
+                                StudentName = $"{student.FirstName} {student.LastName}",
+                                Status = "Failed",
+                                Message = "Invalid scores."
+                            });
+                            continue;
+                        }
+
                         result.SubjectScores.Add(subjectScore);
                         student.Results.Add(result);
                         await _unitOfWork.Result.Register(result);
@@ -245,6 +273,17 @@ namespace SchoolApp.Application.Services
                             continue;
                         }
 
+                        if (subject.Category != student.Level.Category && subject.Category != "Both")
+                        {
+                            studentResultStatuses.Add(new StudentResultStatusDto
+                            {
+                                StudentName = $"{student.FirstName} {student.LastName}",
+                                Status = "Failed",
+                                Message = "Subject category does not match student level category."
+                            });
+                            continue;
+                        }
+
                         var subjectScore = new SubjectScore
                         {
                             SubjectId = subject.Id,
@@ -256,6 +295,19 @@ namespace SchoolApp.Application.Services
                             TotalScore = studentScore.ContinuousAssessment + studentScore.ExamScore,
                             CreatedBy = teacher.Id
                         };
+
+                        var scoreValidate = _validator.ValidateScores(studentScore.ExamScore, studentScore.ContinuousAssessment);
+
+                        if (!scoreValidate)
+                        {
+                            studentResultStatuses.Add(new StudentResultStatusDto
+                            {
+                                StudentName = $"{student.FirstName} {student.LastName}",
+                                Status = "Failed",
+                                Message = "Invalid scores."
+                            });
+                            continue;
+                        }
 
                         _context.SubjectScores.Add(subjectScore);
 
@@ -353,7 +405,7 @@ namespace SchoolApp.Application.Services
             response.Status = true;
             return response;
         }
-        
+
         public async Task<BaseResponse<ResultDto>> Delete(Guid resultId)
         {
             var response = new BaseResponse<ResultDto>();
@@ -528,7 +580,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id  && r.LevelId == levelId && !r.IsDeleted);
+            var result = await _unitOfWork.Result.GetAllResult(r => r.SessionId == session.Id && r.TermId == term.Id && r.LevelId == levelId && !r.IsDeleted);
 
             if (result is null)
             {
@@ -575,6 +627,13 @@ namespace SchoolApp.Application.Services
             if (subjectScore == null)
             {
                 response.Message = "Subject score not found for this subject";
+                return response;
+            }
+
+            var validateScore = _validator.ValidateScores(resultDto.ExamScore, resultDto.ContinuousAssessment);
+            if (!validateScore)
+            {
+                response.Message = "Invalid Scores";
                 return response;
             }
 

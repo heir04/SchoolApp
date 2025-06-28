@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles = "Admin,Teacher")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public class LevelController(ILevelService levelService) : ControllerBase
     {
         private readonly ILevelService _levelService = levelService;
@@ -20,6 +20,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
+        [Authorize(Roles = "Admin,SuperAdmin,Teacher")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _levelService.GetAll();

@@ -9,7 +9,7 @@ namespace SchoolApp.Application.Models.Dto
     {
         public Guid StudentId { get; set; }
         public string? StudentName { get;  set; }
-        public int ContinuousAssessment { get; set; }
-        public int ExamScore { get; set; }
+        public double ContinuousAssessment { get; set; }
+        public double ExamScore { get; set; }
     }
 }

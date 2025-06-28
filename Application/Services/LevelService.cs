@@ -2,12 +2,14 @@
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
+using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
-    public class LevelService(IUnitOfWork unitOfWork) : ILevelService
+    public class LevelService(IUnitOfWork unitOfWork, ValidatorHelper validator) : ILevelService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly ValidatorHelper _validator = validator;
 
         public async Task<BaseResponse<LevelDto>> Create(LevelDto levelDto)
         {
@@ -19,9 +21,17 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
+            var ValidateCategory = _validator.ValidateCategory(levelDto.Category);
+            if (!ValidateCategory)
+            {
+                response.Message = "Invalid Category";
+                return response;
+            }
+
             var level = new Level
             {
                 LevelName = levelDto.LevelName,
+                Category = levelDto.Category,
                 CreatedOn = DateTime.Today
                 //TeacherId = levelDto.LevelTeacherId,
                 //Teacher = levelDto.LevelTeacher
@@ -29,14 +39,9 @@ namespace SchoolApp.Application.Services
             await _unitOfWork.Level.Register(level);
             await _unitOfWork.SaveChangesAsync();
 
-            var levelDTO = new LevelDto 
-            { 
-                LevelName = level.LevelName
-            };
 
             response.Message = "created succesfully";
             response.Status = true;
-            response.Data = levelDTO;
             return response;
         }
 
@@ -58,7 +63,7 @@ namespace SchoolApp.Application.Services
             }
 
             level.IsDeleted = true;
-            await _unitOfWork.Level.Update(level);
+            await _unitOfWork.Level.SaveChangesAsync();
             response.Message = "Deleted Successfully";
             response.Status = true;
             return response;
@@ -77,9 +82,11 @@ namespace SchoolApp.Application.Services
 
             var levelDtos = levels
             .Where(l => l.IsDeleted == false)
-            .Select(l => new LevelDto{
+            .Select(l => new LevelDto
+            {
                 Id = l.Id,
-                LevelName = l.LevelName
+                LevelName = l.LevelName,
+                Category = l.Category ?? string.Empty
             }).ToList();
 
             response.Data = levelDtos;
@@ -97,6 +104,7 @@ namespace SchoolApp.Application.Services
                 response.Message = "Not found";
                 return response;
             }
+
             var level = await _unitOfWork.Level.Get(l => l.Id == levelId);
             if (level is null)
             {
@@ -104,8 +112,16 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
+            var ValidateCategory = _validator.ValidateCategory(levelDto.Category);
+            if (!ValidateCategory)
+            {
+                response.Message = "Invalid Category";
+                return response;
+            }
+
             level.LevelName = levelDto.LevelName;
-            await _unitOfWork.Level.Update(level);
+            level.Category = levelDto.Category;
+            await _unitOfWork.Level.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
             return response;

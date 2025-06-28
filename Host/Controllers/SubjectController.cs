@@ -7,16 +7,11 @@ namespace SchoolApp.Host.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SubjectController : ControllerBase
+    public class SubjectController(ISubjectService subjectService) : ControllerBase
     {
-        private readonly ISubjectService _subjectService;
+        private readonly ISubjectService _subjectService = subjectService;
 
-        public SubjectController(ISubjectService subjectService)
-        {
-            _subjectService = subjectService;
-        }
-
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="SuperAdmin,Admin")]
         [HttpPost("Create")]
         public async Task<IActionResult> Register([FromForm] SubjectDto subjectDto)
         {
@@ -24,7 +19,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="SuperAdmin,Admin")]
         [HttpGet("Get/{id}")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
@@ -32,7 +27,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles ="Admin,Teacher")]
+        [Authorize(Roles ="SuperAdmin,Admin,Teacher")]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
@@ -48,7 +43,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
         
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="SuperAdmin,Admin")]
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> Update([FromRoute]Guid id, SubjectDto subjectDto)
         {
@@ -56,7 +51,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="SuperAdmin,Admin")]
         [HttpPost("Delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {

@@ -12,7 +12,7 @@ namespace SchoolApp.Host.Controllers
         private readonly ISessionService _sessionService = sessionService;
 
         [HttpPost("Register")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Register([FromForm] SessionDto sessionDto)
         {
             var result = await _sessionService.Create(sessionDto);
@@ -20,7 +20,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _sessionService.Get(id);
@@ -36,7 +36,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAllSessionTerm")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> GetAllSessionTerm()
         {
             var result = await _sessionService.GetAllSessionTerm();
@@ -44,7 +44,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _sessionService.GetAll();
@@ -52,7 +52,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("EndSession")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> EndSession()
         {
             var result = await _sessionService.EndSession();
@@ -60,6 +60,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("Update/{id}")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update([FromRoute] Guid id, SessionDto sessionDto)
         {
             var result = await _sessionService.Update(sessionDto, id);
@@ -67,7 +68,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPost("Delete/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _sessionService.Delete(id);
@@ -75,7 +76,7 @@ namespace SchoolApp.Host.Controllers
         }
         
         [HttpPut("UpdateCurrentTerm/{termId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> UpdateCurrentTerm([FromRoute]Guid termId)
         {
             var result = await _sessionService.UpdateCurrentTerm(termId);

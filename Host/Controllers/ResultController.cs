@@ -29,7 +29,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get/{id}")]
-        [Authorize(Roles = "Admin, Teacher, Student")]
+        [Authorize(Roles = "SuperAdmin,Admin,Teacher,Student")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _resultService.Get(id);
@@ -45,7 +45,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll/{subjectId}")]
-        [Authorize(Roles = "Admin, Teacher")]
+        [Authorize(Roles = "Admin,Teacher,SuperAdmin")]
         public async Task<IActionResult> GetAllResult([FromRoute] Guid subjectId)
         {
             var result = await _resultService.GetAllResult(subjectId);
@@ -53,7 +53,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAllByLevel/{levelId}")]
-        [Authorize(Roles = "Admin, Teacher")]
+        [Authorize(Roles = "Admin,Teacher,SuperAdmin")]
         public async Task<IActionResult> GetAllResultByLevel([FromRoute] Guid levelId)
         {
             var result = await _resultService.GetAllResultByLevel(levelId);
@@ -61,7 +61,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetStudentsByLevel/{levelId}/{subjectId}")]
-        [Authorize(Roles = "Admin, Teacher")]
+        [Authorize(Roles = "Admin,Teacher,SuperAdmin")]
         public async Task<IActionResult> GetStudentByLevel([FromRoute] Guid levelId, [FromRoute] Guid subjectId)
         {
             var result = await _resultService.GetStudentsByLevel(levelId, subjectId);
@@ -77,7 +77,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("GiveRemark/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> GiveRemark([FromRoute] Guid id, GiveResultRemarkDto remarkDto)
         {
             var result = await _resultService.GiveRemark(id, remarkDto);
@@ -93,7 +93,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetResultsRemarkCounts/{levelId?}")]
-        [Authorize(Roles = "Admin, Teacher")]
+        [Authorize(Roles = "Admin,Teacher,SuperAdmin")]
         public async Task<IActionResult> GetRemarkCounts([FromRoute] Guid? levelId = null)
         {
             var result = await _resultService.GetResultsRemarkCounts(levelId);

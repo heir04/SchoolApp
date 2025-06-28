@@ -5,7 +5,7 @@ using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles ="SuperAdmin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController(IAdminService adminService) : ControllerBase
