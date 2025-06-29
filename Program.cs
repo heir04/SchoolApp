@@ -57,16 +57,30 @@ string connectionString;
 var railwayConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
                             ?? Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING");
 
+Console.WriteLine($"Railway connection string found: {!string.IsNullOrEmpty(railwayConnectionString)}");
+
 if (!string.IsNullOrEmpty(railwayConnectionString))
 {
     // Use Railway/Azure connection string
     connectionString = railwayConnectionString;
+    Console.WriteLine("Using Railway/Azure connection string");
 }
 else
 {
     // Fallback to local appsettings for development
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                      ?? throw new InvalidOperationException("No database connection string found");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+    Console.WriteLine($"Using appsettings connection string. Found: {!string.IsNullOrEmpty(connectionString)}");
+    
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        Console.WriteLine("ERROR: No connection string found in appsettings.json");
+        Console.WriteLine("Available configuration keys:");
+        foreach (var item in builder.Configuration.AsEnumerable())
+        {
+            Console.WriteLine($"  {item.Key}: {(item.Key.ToLower().Contains("password") ? "***" : item.Value)}");
+        }
+        throw new InvalidOperationException("No database connection string found");
+    }
 }
 
 // Configure SQL Server DbContext

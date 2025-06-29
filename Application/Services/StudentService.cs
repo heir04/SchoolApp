@@ -165,7 +165,7 @@ namespace SchoolApp.Application.Services
             var students = await _unitOfWork.Student.GetAllStudents();
             if (students == null || students.Count == 0)
             {
-                response.Message = "no getStudent in this level";
+                response.Message = "no Student registered";
                 response.Status = false;
                 return response;
             }
