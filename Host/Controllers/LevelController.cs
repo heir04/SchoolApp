@@ -7,12 +7,12 @@ namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public class LevelController(ILevelService levelService) : ControllerBase
     {
         private readonly ILevelService _levelService = levelService;
 
         [HttpPost("Create")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Create([FromForm]LevelDto levelDto)
         {
             var result = await _levelService.Create(levelDto);
@@ -28,6 +28,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("Update/{id}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Update(Guid id, LevelDto levelDto)
         {
             var result = await _levelService.Update(levelDto, id);
@@ -35,6 +36,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPost("Delete/{id}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Delete([FromRoute]Guid id)
         {
             var result = await _levelService.Delete(id);
