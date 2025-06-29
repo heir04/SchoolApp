@@ -5,13 +5,13 @@ using SchoolApp.Application.Models.Dto;
 
 namespace SchoolApp.Host.Controllers
 {
-    [Authorize(Roles ="SuperAdmin")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="SuperAdmin")]
     public class AdminController(IAdminService adminService) : ControllerBase
     {
         private readonly IAdminService _adminService = adminService;
-    
+
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] AdminDto adminDto)
         {
@@ -25,7 +25,8 @@ namespace SchoolApp.Host.Controllers
             var result = await _adminService.Get(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
-        
+
+        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpGet("GetProfile")]
         public async Task<IActionResult> GetByCurrentUserId()
         {
@@ -48,7 +49,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("Update/{id}")]
-        public async Task<IActionResult> Update([FromRoute]Guid id, AdminDto adminDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, AdminDto adminDto)
         {
             var result = await _adminService.Update(id, adminDto);
             return result.Status ? Ok(result) : BadRequest(result);
