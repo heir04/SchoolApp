@@ -10,7 +10,7 @@ namespace SchoolApp.Host.Controllers
     [ApiController]
     public class RoleController(IRoleService roleService) : ControllerBase
     {
-        private readonly IRoleService _roleService = roleService;
+         private readonly IRoleService _roleService = roleService;
 
         [HttpPost("Create")]
         public async Task<IActionResult> Create(RoleDto roleDto)
