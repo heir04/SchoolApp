@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['dotnet-sdk_9']
+
+[phases.build]
+cmds = ['dotnet restore', 'dotnet build -c Release --no-restore']
+
+[phases.deploy]
+cmd = 'dotnet run --no-build -c Release --urls http://0.0.0.0:$PORT'
+
+[variables]
+DOTNET_ROOT = '/nix/store/...-dotnet-sdk-9.0.xxx'
