@@ -50,9 +50,28 @@ builder.Services.AddEndpointsApiExplorer();
 // Using SQLite as Db
 // builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// using sqlServer Express as Db
+// Database Configuration - Handle Railway environment variables
+string connectionString;
+
+// Check for Railway environment variable first (for deployment)
+var railwayConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
+                            ?? Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING");
+
+if (!string.IsNullOrEmpty(railwayConnectionString))
+{
+    // Use Railway/Azure connection string
+    connectionString = railwayConnectionString;
+}
+else
+{
+    // Fallback to local appsettings for development
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                      ?? throw new InvalidOperationException("No database connection string found");
+}
+
+// Configure SQL Server DbContext
 builder.Services.AddDbContext<ApplicationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+    options.UseSqlServer(connectionString, 
         sqlOptions => {
             sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 3,
@@ -88,15 +107,21 @@ builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options => {
+    // Handle Railway environment variables or fallback to appsettings
+    var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["JwtSettings:Key"];
+    var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["JwtSettings:Issuer"];
+    var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["JwtSettings:Audience"];
+    
     options.TokenValidationParameters = new TokenValidationParameters {
             ClockSkew = TimeSpan.Zero,
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey 
+                ?? throw new InvalidOperationException("JWT Key not found in configuration or environment variables"))),
 
     };
 });
