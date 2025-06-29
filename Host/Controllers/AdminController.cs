@@ -7,12 +7,12 @@ namespace SchoolApp.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="SuperAdmin")]
     public class AdminController(IAdminService adminService) : ControllerBase
     {
         private readonly IAdminService _adminService = adminService;
 
         [HttpPost("Register")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> Register([FromForm] AdminDto adminDto)
         {
             var result = await _adminService.Register(adminDto);
@@ -20,14 +20,15 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get/{id}")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {
             var result = await _adminService.Get(id);
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [Authorize(Roles = "SuperAdmin,Admin")]
         [HttpGet("GetProfile")]
+        [Authorize(Roles = "SuperAdmin,Admin")]
         public async Task<IActionResult> GetByCurrentUserId()
         {
             var result = await _adminService.GetByCurrentUserId();
@@ -35,6 +36,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("Get")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> Get(string email)
         {
             var result = await _adminService.Get(email);
@@ -42,6 +44,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpGet("GetAll")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _adminService.GetAll();
@@ -49,6 +52,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPut("Update/{id}")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> Update([FromRoute] Guid id, AdminDto adminDto)
         {
             var result = await _adminService.Update(id, adminDto);
@@ -56,6 +60,7 @@ namespace SchoolApp.Host.Controllers
         }
 
         [HttpPost("Delete/{id}")]
+        [Authorize(Roles ="SuperAdmin")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var result = await _adminService.Delete(id);
