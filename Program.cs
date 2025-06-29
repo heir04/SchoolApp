@@ -52,7 +52,14 @@ builder.Services.AddEndpointsApiExplorer();
 
 // using sqlServer Express as Db
 builder.Services.AddDbContext<ApplicationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+        sqlOptions => {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: Array.Empty<int>());
+        }
+    ));
 
 
 builder.Services.AddSwaggerGen(options => {
