@@ -3,6 +3,7 @@ namespace SchoolApp.Application.Abstraction.IRepositories
     public interface IUnitOfWork : IDisposable
     {
         IAdminRepository Admin { get; }
+        IAssignmentRepository Assignment { get; }
         ILevelRepository Level { get; }
         IRoleRepository Role { get; }
         IResultRepository Result { get; }

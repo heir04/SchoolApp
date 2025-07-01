@@ -9,6 +9,7 @@ namespace SchoolApp.Infrastructure.Repositories
         private bool _disposed = false;
         
         public IAdminRepository Admin { get; }
+        public IAssignmentRepository Assignment { get;  }
         public ILevelRepository Level { get; }
         public IRoleRepository Role { get; }
         public IResultRepository Result { get; }
@@ -22,6 +23,7 @@ namespace SchoolApp.Infrastructure.Repositories
         public UnitOfWork(
             ApplicationContext context,
             IAdminRepository adminRepository,
+            IAssignmentRepository assignmentRepository,
             ILevelRepository levelRepository,
             IRoleRepository roleRepository,
             IResultRepository resultRepository,
@@ -35,6 +37,7 @@ namespace SchoolApp.Infrastructure.Repositories
         {
             _context = context;
             Admin = adminRepository;
+            Assignment = assignmentRepository;
             Level = levelRepository;
             Role = roleRepository;
             Result = resultRepository;
