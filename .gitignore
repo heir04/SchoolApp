@@ -59,5 +59,8 @@ artifacts/
 *.edmx.diagram
 *.edmx.sql
 
+# Data Protection Keys
+keys/
+
 # Docker
 .dockerignore

@@ -27,5 +27,8 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Create directory for data protection keys
+RUN mkdir -p /app/keys && chmod 700 /app/keys
+
 # Set the entry point
 ENTRYPOINT ["dotnet", "schoolapp.dll"]

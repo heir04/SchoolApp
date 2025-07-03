@@ -10,6 +10,7 @@ using System.Text;
 using SchoolApp.Core.Helper;
 using Microsoft.OpenApi.Models;
 using SchoolApp.Infrastructure.Data;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,11 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<ValidatorHelper>();
 
+// Configure Data Protection
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "keys")))
+    .SetApplicationName("SchoolApp")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
