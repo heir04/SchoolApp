@@ -26,8 +26,8 @@ namespace SchoolApp.Application.Services
             user.IsDeleted = true;
             user.IsDeleteBy = user.Id;
             user.IsDeleteOn = DateTime.Now;
-            await _unitOfWork.User.Update(user);
-            response.Message = "";
+            await _unitOfWork.SaveChangesAsync();
+            response.Message = "User deleted successfully";
             response.Status = true;
             return response;
         }

@@ -642,7 +642,7 @@ namespace SchoolApp.Application.Services
             subjectScore.TotalScore = resultDto.ContinuousAssessment + resultDto.ExamScore;
 
 
-            await _unitOfWork.Result.Update(result);
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Success";
             response.Status = true;
             return response;

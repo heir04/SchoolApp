@@ -100,7 +100,7 @@ namespace SchoolApp.Application.Services
 
         getSession.CurrentSession = false;
 
-        await _unitOfWork.Session.Update(getSession);
+        await _unitOfWork.SaveChangesAsync();
         response.Message = "Session ended successfully";
         response.Status = true;
         return response;
@@ -125,7 +125,8 @@ namespace SchoolApp.Application.Services
         }
 
         session.IsDeleted = true;
-        await _unitOfWork.Session.Update(session);
+
+        await _unitOfWork.SaveChangesAsync();
         response.Message = "Deleted Successfully";
         response.Status = true;
         return response;
@@ -207,7 +208,8 @@ namespace SchoolApp.Application.Services
         session.SessionName = sessionDto.SessionName;
         session.StartDate = sessionDto.StartDate;
         session.EndDate = sessionDto.EndDate;
-        await _unitOfWork.Session.Update(session);
+
+        await _unitOfWork.SaveChangesAsync();
         response.Message = "Success";
         response.Status = true;
         return response;

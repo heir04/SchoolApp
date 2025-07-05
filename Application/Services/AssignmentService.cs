@@ -3,82 +3,73 @@ using SchoolApp.Application.Abstraction.IRepositories;
 using SchoolApp.Application.Abstraction.IServices;
 using SchoolApp.Application.Models.Dto;
 using SchoolApp.Core.Domain.Entities;
+using SchoolApp.Core.Helper;
 
 namespace SchoolApp.Application.Services
 {
-    public class AssignmentService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IAssignmentService
+    public class AssignmentService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, ValidatorHelper validatorHelper) : IAssignmentService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly ValidatorHelper _validatorHelper = validatorHelper;
+
         public async Task<BaseResponse<AssignmentDto>> Create(AssignmentDto assignmentDto)
         {
             var response = new BaseResponse<AssignmentDto>();
 
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            // Validate user
+            var userValidation = _validatorHelper.ValidateUser();
+            if (!userValidation.IsValid)
             {
-                response.Message = "Invalid user ID";
+                response.Message = userValidation.ErrorMessage;
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId && !t.IsDeleted);
-            if (teacher is null)
+            // Validate teacher
+            var teacherValidation = await _validatorHelper.ValidateTeacherAsync(userValidation.UserId);
+            if (!teacherValidation.IsValid)
             {
-                response.Message = "Teacher not found";
+                response.Message = teacherValidation.ErrorMessage;
                 return response;
             }
 
-            var session = await _unitOfWork.Session.GetCurrentSession();
-            if (session is null)
+            // Validate session and term
+            var sessionTermValidation = await _validatorHelper.ValidateCurrentSessionAndTermAsync();
+            if (!sessionTermValidation.IsValid)
             {
-                response.Message = "No session set";
-                return response;
-            }
-            
-            var term = session.Terms?.FirstOrDefault(t => t.CurrentTerm == true);
-            if (term is null)
-            {
-                response.Message = "No current term set";
+                response.Message = sessionTermValidation.ErrorMessage;
                 return response;
             }
 
-            if (assignmentDto.SubjectId == Guid.Empty)
+            // Validate subject
+            var subjectValidation = await _validatorHelper.ValidateSubjectAsync(assignmentDto.SubjectId);
+            if (!subjectValidation.IsValid)
             {
-                response.Message = "subject is empty";
-                return response;
-            }
-            var subject = await _unitOfWork.Subject.Get(s => s.Id == assignmentDto.SubjectId);
-            if (subject is null)
-            {
-                response.Message = "Subject not found";
+                response.Message = subjectValidation.ErrorMessage;
                 return response;
             }
 
-            if (assignmentDto.LevelId == Guid.Empty)
+            // Validate level
+            var levelValidation = await _validatorHelper.ValidateLevelAsync(assignmentDto.LevelId);
+            if (!levelValidation.IsValid)
             {
-                response.Message = "level is empty";
-                return response;
-            }
-            var level = await _unitOfWork.Level.Get(s => s.Id == assignmentDto.LevelId);
-            if (level is null)
-            {
-                response.Message = "Level not found";
+                response.Message = levelValidation.ErrorMessage;
                 return response;
             }
 
             var assignment = new Assignment
             {
                 Content = assignmentDto.Content,
-                Level = level,
-                LevelId = level.Id,
-                Session = session,
-                SessionId = session.Id,
-                Subject = subject,
-                SubjectId = subject.Id,
-                TeacherId = teacher.Id,
-                Teacher = teacher,
-                Term = term,
-                TermId = term.Id,
+                Level = levelValidation.Level,
+                LevelId = levelValidation.Level!.Id,
+                Session = sessionTermValidation.Session,
+                SessionId = sessionTermValidation.Session!.Id,
+                Subject = subjectValidation.Subject,
+                SubjectId = subjectValidation.Subject!.Id,
+                TeacherId = teacherValidation.Teacher!.Id,
+                Teacher = teacherValidation.Teacher,
+                Term = sessionTermValidation.Term,
+                TermId = sessionTermValidation.Term!.Id,
                 Instructions = assignmentDto.Instructions,
                 DueDate = assignmentDto.DueDate
             };
@@ -94,43 +85,45 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<AssignmentDto>();
 
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            // Validate user
+            var userValidation = _validatorHelper.ValidateUser();
+            if (!userValidation.IsValid)
             {
-                response.Message = "Invalid user ID";
+                response.Message = userValidation.ErrorMessage;
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId);
-            if (teacher is null)
+            // Validate teacher
+            var teacherValidation = await _validatorHelper.ValidateTeacherAsync(userValidation.UserId);
+            if (!teacherValidation.IsValid)
             {
-                response.Message = "Teacher not found";
+                response.Message = teacherValidation.ErrorMessage;
                 return response;
             }
 
             var assignment = await _unitOfWork.Assignment.Get(a => a.Id == assignmentId && !a.IsDeleted);
-
             if (assignment is null)
             {
                 response.Message = "Not found";
                 return response;
             }
 
-             if (assignment.TeacherId != teacher.Id)
+            // Validate ownership
+            var ownershipValidation = _validatorHelper.ValidateAssignmentOwnership(assignment, teacherValidation.Teacher!);
+            if (!ownershipValidation.IsValid)
             {
-                response.Message = "You are not authorized to update this assignment";
+                response.Message = ownershipValidation.ErrorMessage;
                 return response;
             }
 
             assignment.IsDeleted = true;
-            assignment.IsDeleteBy = teacher.Id;
+            assignment.IsDeleteBy = teacherValidation.Teacher!.Id;
             assignment.IsDeleteOn = DateTime.UtcNow;
 
             await _unitOfWork.Assignment.SaveChangesAsync();
             response.Message = "Deleted Successfully";
             response.Status = true;
             return response;
-
         }
 
         public async Task<BaseResponse<AssignmentDto>> Get(Guid id)
@@ -147,6 +140,7 @@ namespace SchoolApp.Application.Services
             var assignmentDto = new AssignmentDto
             {
                 Id = assignment.Id,
+                Content = assignment.Content,
                 Instructions = assignment.Instructions,
                 Level = assignment.Level?.LevelName,
                 Teacher = $"{assignment.Teacher?.FirstName} {assignment.Teacher?.LastName}",
@@ -195,35 +189,32 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<AssignmentDto>>> GetAllStudentTermAssignment()
         {
             var response = new BaseResponse<IEnumerable<AssignmentDto>>();
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            
+            // Validate user
+            var userValidation = _validatorHelper.ValidateUser();
+            if (!userValidation.IsValid)
             {
-                response.Message = "Invalid user ID";
+                response.Message = userValidation.ErrorMessage;
                 return response;
             }
 
-            var student = await _unitOfWork.Student.Get(s => s.UserId == userId);
-            if (student is null)
+            // Validate student
+            var studentValidation = await _validatorHelper.ValidateStudentAsync(userValidation.UserId);
+            if (!studentValidation.IsValid)
             {
-                response.Message = "Student not found";
+                response.Message = studentValidation.ErrorMessage;
                 return response;
             }
 
-            var session = await _unitOfWork.Session.GetCurrentSession();
-            if (session is null)
+            // Validate session and term
+            var sessionTermValidation = await _validatorHelper.ValidateCurrentSessionAndTermAsync();
+            if (!sessionTermValidation.IsValid)
             {
-                response.Message = "No session set";
+                response.Message = sessionTermValidation.ErrorMessage;
                 return response;
             }
             
-            var term = session.Terms?.FirstOrDefault(t => t.CurrentTerm == true);
-            if (term is null)
-            {
-                response.Message = "No current term set";
-                return response;
-            }
-            
-            var assignments = await _unitOfWork.Assignment.GetAllAssignments(a => a.LevelId == student.LevelId && a.TermId == term.Id && !a.IsDeleted);
+            var assignments = await _unitOfWork.Assignment.GetAllAssignments(a => a.LevelId == studentValidation.Student!.LevelId && a.TermId == sessionTermValidation.Term!.Id && !a.IsDeleted);
             if (assignments is null || !assignments.Any())
             {
                 response.Message = "No assignments found for this student in the current term";
@@ -252,21 +243,24 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<IEnumerable<AssignmentDto>>> GetAllTeacherAssignment()
         {
             var response = new BaseResponse<IEnumerable<AssignmentDto>>();
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            
+            // Validate user
+            var userValidation = _validatorHelper.ValidateUser();
+            if (!userValidation.IsValid)
             {
-                response.Message = "Invalid user ID";
+                response.Message = userValidation.ErrorMessage;
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId);
-            if (teacher is null)
+            // Validate teacher
+            var teacherValidation = await _validatorHelper.ValidateTeacherAsync(userValidation.UserId);
+            if (!teacherValidation.IsValid)
             {
-                response.Message = "Teacher not found";
+                response.Message = teacherValidation.ErrorMessage;
                 return response;
             }
 
-            var assignments = await _unitOfWork.Assignment.GetAllAssignments(a => a.TeacherId == teacher.Id && !a.IsDeleted);
+            var assignments = await _unitOfWork.Assignment.GetAllAssignments(a => a.TeacherId == teacherValidation.Teacher!.Id && !a.IsDeleted);
             if (assignments is null || !assignments.Any())
             {
                 response.Message = "No assignments found for this teacher in the current term";
@@ -296,17 +290,19 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<AssignmentDto>();
 
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            // Validate user
+            var userValidation = _validatorHelper.ValidateUser();
+            if (!userValidation.IsValid)
             {
-                response.Message = "Invalid user ID";
+                response.Message = userValidation.ErrorMessage;
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.Get(t => t.UserId == userId);
-            if (teacher is null)
+            // Validate teacher
+            var teacherValidation = await _validatorHelper.ValidateTeacherAsync(userValidation.UserId);
+            if (!teacherValidation.IsValid)
             {
-                response.Message = "Teacher not found";
+                response.Message = teacherValidation.ErrorMessage;
                 return response;
             }
 
@@ -317,22 +313,26 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            if (assignment.TeacherId != teacher.Id)
+            // Validate ownership
+            var ownershipValidation = _validatorHelper.ValidateAssignmentOwnership(assignment, teacherValidation.Teacher!);
+            if (!ownershipValidation.IsValid)
             {
-                response.Message = "You are not authorized to update this assignment";
+                response.Message = ownershipValidation.ErrorMessage;
                 return response;
             }
 
-            if (assignment.DueDate < DateOnly.FromDateTime(DateTime.Now))
+            // Validate due date
+            var dueDateValidation = _validatorHelper.ValidateAssignmentDueDate(assignment);
+            if (!dueDateValidation.IsValid)
             {
-                response.Message = "Can't update after due date";
+                response.Message = dueDateValidation.ErrorMessage;
                 return response;
             }
 
             assignment.Content = assignmentDto.Content;
             assignment.Instructions = assignmentDto.Instructions;
             assignment.DueDate = assignmentDto.DueDate;
-            assignment.LastModifiedBy = teacher.Id;
+            assignment.LastModifiedBy = teacherValidation.Teacher!.Id;
             assignment.LastModifiedOn = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangesAsync();

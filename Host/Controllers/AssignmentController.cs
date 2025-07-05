@@ -24,7 +24,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpDelete("Delete/{assignmentId}")]
+        [HttpPost("Delete/{assignmentId}")]
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> Delete(Guid assignmentId)
         {

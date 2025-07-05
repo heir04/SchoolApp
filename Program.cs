@@ -57,6 +57,11 @@ builder.Services.AddEndpointsApiExplorer();
 // Using SQLite as Db
 // builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// using SQL Server as Db
+// var connectionString = builder.Configuration.GetConnectionString("DefaultConnections");
+// builder.Services.AddDbContext<ApplicationContext>(options =>
+//     options.UseSqlServer(connectionString));
+
 // Database Configuration - Handle Railway environment variables
 string connectionString;
 

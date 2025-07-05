@@ -61,14 +61,8 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            if (subject.IsDeleted == true)
-            {
-                response.Message = "Subject already deleted";
-                return response;
-            }
-
             subject.IsDeleted = true;
-            await _unitOfWork.Subject.Update(subject);
+            await _unitOfWork.SaveChangesAsync();
             response.Message = "Deleted Successfully";
             response.Status = true;
             return response;

@@ -34,7 +34,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
             student.IsDeleted = true;
-            await _unitOfWork.Student.Update(student);
+            await _unitOfWork.SaveChangesAsync();
 
             response.Message = "Student deleted";
             response.Status = true;

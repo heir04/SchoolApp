@@ -13,7 +13,7 @@ namespace SchoolApp.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Teacher>> GetAllTeachers()
+        public async Task<IList<Teacher>> GetAllTeachers()
         {
             var teachers = _context.Teachers
             .Include(t => t.TeacherSubjects)
@@ -22,6 +22,7 @@ namespace SchoolApp.Infrastructure.Repositories
 
             return await teachers;
         }
+
         public async Task<Teacher> GetTeacher(Expression<Func<Teacher, bool>> expression)
         {
             var teacher = _context.Teachers
