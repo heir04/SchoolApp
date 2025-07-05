@@ -130,7 +130,7 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<AssignmentDto>();
 
-            var assignment = await _unitOfWork.Assignment.Get(a => a.Id == id && !a.IsDeleted);
+            var assignment = await _unitOfWork.Assignment.GetAssignment(a => a.Id == id && !a.IsDeleted);
             if (assignment is null)
             {
                 response.Message = "assignment not found";
