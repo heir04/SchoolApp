@@ -17,17 +17,6 @@ namespace SchoolApp.Host.Controllers
             });
         }
         
-        [HttpGet("all")]
-        public IActionResult GetAll()
-        {
-            return Ok(new { 
-                Status = "Healthy", 
-                Timestamp = DateTime.UtcNow,
-                Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
-                Message = "SchoolApp is running successfully on Railway!" 
-            });
-        }
-
         [HttpGet("database")]
         public IActionResult DatabaseHealth([FromServices] SchoolApp.Infrastructure.Context.ApplicationContext context)
         {
