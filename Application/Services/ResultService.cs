@@ -568,7 +568,55 @@ namespace SchoolApp.Application.Services
             response.Status = true;
             return response;
         }
+        
+        public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultsByStudentId(string studentId)
+        {
+            var response = new BaseResponse<IEnumerable<ResultDto>>();
+           
+            var student = await _unitOfWork.Student.Get(s => s.StudentId == studentId);
+            if (student is null)
+            {
+                response.Message = "Student not found";
+                return response;
+            }
+            var session = await _unitOfWork.Session.GetCurrentSession();
+            var term = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
+            if (session is null || term is null)
+            {
+                response.Message = "No session or term set";
+                return response;
+            }
 
+            var result = await _unitOfWork.Result.GetAllResult(r => r.StudentId == student.Id && !r.IsDeleted);
+            if (result is null)
+            {
+                response.Message = "Result is not available currently";
+                return response;
+            }
+
+            response.Data = result.Select(
+                result => new ResultDto
+                {
+                    Id = result.Id,
+                    StudentName = $"{result.Student?.FirstName} {result.Student?.LastName}",
+                    Level = result.Level?.LevelName,
+                    TermName = result.Term?.Name,
+                    SessionName = result.Session?.SessionName,
+                    TotalScore = result.TermTotalScore,
+                    Remark = result.Remark,
+                    SubjectScores = [.. result.SubjectScores.Select(s => new SubjectScoreDto
+                    {
+                        SubjectName = s.Subject?.Name,
+                        ContinuousAssessment = s.ContinuousAssessment,
+                        ExamScore = s.ExamScore,
+                        TotalScore = s.TotalScore
+                    })]
+                }).ToList();
+            response.Message = "Success";
+            response.Status = true;
+            return response;
+        }
+       
         public async Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByLevel(Guid levelId)
         {
             var response = new BaseResponse<IEnumerable<ResultDto>>();

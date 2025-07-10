@@ -16,5 +16,6 @@ namespace SchoolApp.Application.Abstraction.IServices
         Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByLevel(Guid levelId);
         Task<BaseResponse<ResultRemarkCountDto>> GetResultsRemarkCounts(Guid? levelId = null);
         Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultByCurrentUserId();
+        Task<BaseResponse<IEnumerable<ResultDto>>> GetAllResultsByStudentId(string studentId);
     }
 }

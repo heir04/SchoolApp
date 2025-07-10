@@ -48,7 +48,6 @@ namespace SchoolApp.Application.Services
         var response = new BaseResponse<SessionDto>();
         var session = await _unitOfWork.Session.GetCurrentSession();
         var currentTerm = session.Terms.FirstOrDefault(t => t.CurrentTerm == true);
-        var term = await _unitOfWork.Term.Get(t => t.Id == termId);
         
         if (session is null || currentTerm is null)
         {
@@ -56,8 +55,15 @@ namespace SchoolApp.Application.Services
             return response;
         }
 
+        var termToUpdate = session.Terms.FirstOrDefault(t => t.Id == termId);
+        if (termToUpdate is null)
+        {
+            response.Message = "Term not found";
+            return response;
+        }
+
         currentTerm.CurrentTerm = false;
-        term.CurrentTerm = true;
+        termToUpdate.CurrentTerm = true;
 
         await _unitOfWork.SaveChangesAsync();
         response.Message = "Term updated";

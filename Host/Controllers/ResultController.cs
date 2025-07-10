@@ -44,6 +44,14 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("GetAllResult/{studentId}")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetAllResultByStudentId(string studentId)
+        {
+            var result = await _resultService.GetAllResultsByStudentId(studentId);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("GetAll/{subjectId}")]
         [Authorize(Roles = "Admin,Teacher,SuperAdmin")]
         public async Task<IActionResult> GetAllResult([FromRoute] Guid subjectId)
@@ -100,7 +108,7 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("GetAllByCurrentUser")]
+        [HttpGet("GetAllStudentResults")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> GetAllByCurrentUser()
         {
