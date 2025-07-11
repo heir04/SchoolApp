@@ -636,7 +636,7 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            response.Data = result.Where(r => r.Remark != null).Select(
+            response.Data = result.Select(
                 result => new ResultDto
                 {
                     Id = result.Id,
