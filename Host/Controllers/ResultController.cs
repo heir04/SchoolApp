@@ -44,9 +44,9 @@ namespace SchoolApp.Host.Controllers
             return result.Status ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("GetAllResult/{studentId}")]
-        [Authorize(Roles = "Student")]
-        public async Task<IActionResult> GetAllResultByStudentId(string studentId)
+        [HttpGet("GetAllResults/{studentId}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        public async Task<IActionResult> GetAllResultsByStudentId(string studentId)
         {
             var result = await _resultService.GetAllResultsByStudentId(studentId);
             return result.Status ? Ok(result) : BadRequest(result);
