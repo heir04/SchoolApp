@@ -18,7 +18,9 @@ namespace SchoolApp.Infrastructure.Repositories
             var result = _context.Results
                 .Where(expression)
                 .Include(r => r.Student)
+                .Include(r => r.Level)
                 .Include(r => r.Session)
+                .Include(r => r.Term)
                 .Include(r => r.SubjectScores)
                 .ThenInclude(ss => ss.Subject)
                 .ToListAsync();

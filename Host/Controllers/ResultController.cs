@@ -110,7 +110,7 @@ namespace SchoolApp.Host.Controllers
 
         [HttpGet("GetAllStudentResults")]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> GetAllByCurrentUser()
+        public async Task<IActionResult> GetAllResultsByCurrentUserId()
         {
             var result = await _resultService.GetAllResultByCurrentUserId();
             return result.Status ? Ok(result) : BadRequest(result);
