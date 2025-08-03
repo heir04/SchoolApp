@@ -269,15 +269,22 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<StudentDto>> Register(StudentDto studentDto)
         {
             var response = new BaseResponse<StudentDto>();
-            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Email == studentDto.Email);
+            
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
             var defaultPassword = $"{studentDto.StudentId}";
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
-
+            
+            var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Email == studentDto.Email && !s.IsDeleted);
             if (studentExist)
             {
                 response.Message = $"Student with email: {studentDto.Email} already exist";
+                return response;
+            }
+            var userExist = await _unitOfWork.User.ExistsAsync(u => u.Email == studentDto.Email && !u.IsDeleted);
+            if (userExist)
+            {
+                response.Message = "User with this email already exists";
                 return response;
             }
 

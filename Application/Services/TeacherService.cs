@@ -31,6 +31,12 @@ namespace SchoolApp.Application.Services
                 response.Message = "Email already in use";
                 return response;
             }
+            var userExist = await _unitOfWork.User.ExistsAsync(u => u.Email == teacherDto.Email);
+            if (userExist)
+            {
+                response.Message = "User with this email already exists";
+                return response;
+            }
 
             var user = new User
             {
