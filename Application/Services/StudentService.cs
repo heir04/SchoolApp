@@ -270,7 +270,8 @@ namespace SchoolApp.Application.Services
         {
             var response = new BaseResponse<StudentDto>();
             var studentExist = await _unitOfWork.Student.ExistsAsync(s => s.Email == studentDto.Email);
-            var defaultPassword = $"{studentDto.FirstName}";
+            studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
+            var defaultPassword = $"{studentDto.StudentId}";
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
 

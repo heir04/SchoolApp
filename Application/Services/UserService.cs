@@ -44,8 +44,9 @@ namespace SchoolApp.Application.Services
             }
 
             response.Data = users.Select(
-                user => new UserDto{
-                   Email = user.Email,         
+                user => new UserDto
+                {
+                    Email = user.Email,
                 }).ToList();
             response.Status = true;
             response.Message = "";
@@ -76,11 +77,21 @@ namespace SchoolApp.Application.Services
         public async Task<BaseResponse<UserDto>> Login(UserDto userDto)
         {
             var response = new BaseResponse<UserDto>();
+
             var user = await _unitOfWork.User.GetUser(x => x.Email == userDto.Email.ToLower());
 
             if (user is null)
             {
-                response.Message = $"Incorrect email or password!";
+                var student = await _unitOfWork.Student.Get(s => s.StudentId == userDto.Email.ToLower());
+                if (student != null)
+                {
+                    user = await _unitOfWork.User.GetUser(x => x.Id == student.UserId && !x.IsDeleted);
+                }
+            }
+
+            if (user is null)
+            {
+                response.Message = "Incorrect email/studentId or password!";
                 return response;
             }
 
@@ -108,7 +119,7 @@ namespace SchoolApp.Application.Services
             response.Status = true;
             return response;
         }
-        
+
         public async Task<BaseResponse<UpdateUserPasswordDto>> UpdatePassword(UpdateUserPasswordDto userDto)
         {
             var response = new BaseResponse<UpdateUserPasswordDto>();
@@ -132,14 +143,14 @@ namespace SchoolApp.Application.Services
                 response.Message = "Current password is incorrect";
                 return response;
             }
-            
+
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(userDto.NewPassword, saltString);
             user.HashSalt = saltString;
             user.PasswordHash = hashedPassword;
             user.LastModifiedBy = user.Id;
             user.LastModifiedBy = user.Id;
-            
+
             await _unitOfWork.SaveChangesAsync();
             response.Message = "Password Updated";
             response.Status = true;
