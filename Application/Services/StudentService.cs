@@ -271,7 +271,8 @@ namespace SchoolApp.Application.Services
             var response = new BaseResponse<StudentDto>();
             
             studentDto.StudentId = $"STU{Guid.NewGuid().ToString().Replace("-", "")[..5].ToUpper()}";
-            var defaultPassword = $"{studentDto.StudentId}";
+            var studentId = studentDto.StudentId;
+            var defaultPassword = studentId;
             string saltString = HashingHelper.GenerateSalt();
             string hashedPassword = HashingHelper.HashPassword(defaultPassword, saltString);
             
@@ -324,7 +325,7 @@ namespace SchoolApp.Application.Services
 
             var student = new Student
             {
-                StudentId = studentDto.StudentId,
+                StudentId = studentId,
                 FirstName = studentDto.FirstName,
                 LastName = studentDto.LastName,
                 Email = studentDto.Email?.ToLower(),
