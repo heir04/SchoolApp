@@ -236,7 +236,7 @@ namespace SchoolApp.Application.Services
                 Gender = t.Gender,
                 Address = t.Address,
                 CreatedOn = t.CreatedOn,
-                Subjects = t.TeacherSubjects.Select(ts => ts.Subject.Name).ToList()
+                Subjects = t.TeacherSubjects.Where(ts => !ts.IsDeleted).Select(ts => ts.Subject.Name).ToList()
             }).ToList();
             
             response.Message = "Success";
