@@ -82,7 +82,7 @@ namespace SchoolApp.Application.Services
 
             if (user is null)
             {
-                var student = await _unitOfWork.Student.Get(s => s.StudentId == userDto.Email.ToLower());
+                var student = await _unitOfWork.Student.Get(s => s.StudentId == userDto.Email.ToLower() && !s.IsDeleted);
                 if (student != null)
                 {
                     user = await _unitOfWork.User.GetUser(x => x.Id == student.UserId && !x.IsDeleted);

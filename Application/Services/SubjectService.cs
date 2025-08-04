@@ -168,14 +168,14 @@ namespace SchoolApp.Application.Services
                 return response;
             }
 
-            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId);
+            var teacher = await _unitOfWork.Teacher.GetTeacher(t => t.UserId == userId && !t.IsDeleted);
             if (teacher == null)
             {
                 response.Message = "Teacher not found";
                 return response;
             }
 
-            var subjects = teacher.TeacherSubjects.Select(ts => new SubjectDto
+            var subjects = teacher.TeacherSubjects.Where(ts => !ts.IsDeleted).Select(ts => new SubjectDto
             {
                 Id = ts.SubjectId,
                 Name = ts.Subject.Name
